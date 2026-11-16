@@ -43,6 +43,7 @@ export function getLuminance(hex) {
 export async function renderMockupCanvas({
   modelConfig,
   shirtColorHex,
+  skinToneFilter = 'none',
   graphicImgElement,
   graphicState, // { x, y, scale, rotation, flipH, flipV, blendMode, opacity }
   stageDimensions, // { width, height } of the DOM stage for coordinate mapping
@@ -55,20 +56,26 @@ export async function renderMockupCanvas({
   canvas.height = canvasHeight;
   const ctx = canvas.getContext('2d');
 
-  // 1. Load base model image
+  // 1. Load and draw base model image with skin tone filter applied
   const baseImg = await loadImage(modelConfig.baseImage);
+  ctx.save();
+  if (skinToneFilter && skinToneFilter !== 'none') {
+    ctx.filter = skinToneFilter;
+  }
   ctx.drawImage(baseImg, 0, 0, canvasWidth, canvasHeight);
+  ctx.restore();
 
-  // 2. Garment recoloring
+  // 2. Garment layer: Draw original white shirt cutout first so skin filter doesn't bleed into shirt
+  const [shirtImg, maskImg, shadowsImg] = await Promise.all([
+    loadImage(modelConfig.shirtImage),
+    loadImage(modelConfig.maskImage),
+    loadImage(modelConfig.shadowsImage)
+  ]);
+  ctx.drawImage(shirtImg, 0, 0, canvasWidth, canvasHeight);
+
+  // 3. Garment recoloring if not white
   const isWhite = shirtColorHex.toUpperCase() === '#FFFFFF';
   if (!isWhite) {
-    // Load shirt mask and shirt shadows
-    const [maskImg, shadowsImg] = await Promise.all([
-      loadImage(modelConfig.maskImage),
-      loadImage(modelConfig.shadowsImage)
-    ]);
-
-    // Offscreen canvas for shirt color multiplication
     const colorCanvas = document.createElement('canvas');
     colorCanvas.width = canvasWidth;
     colorCanvas.height = canvasHeight;
@@ -99,7 +106,7 @@ export async function renderMockupCanvas({
     }
   }
 
-  // 3. Render User Graphic if present
+  // 4. Render User Graphic if present
   if (graphicImgElement && graphicImgElement.src) {
     ctx.save();
 
@@ -137,8 +144,7 @@ export async function renderMockupCanvas({
 
     ctx.restore();
 
-    // 4. Overlap fabric shadows over the graphic for photorealistic fabric crease draping
-    const shadowsImg = await loadImage(modelConfig.shadowsImage);
+    // 5. Overlap fabric shadows over the graphic for photorealistic fabric crease draping
     ctx.save();
     ctx.globalCompositeOperation = 'multiply';
     ctx.globalAlpha = 0.55;

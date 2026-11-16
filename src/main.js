@@ -1,11 +1,15 @@
 // Atelier T-Shirt Studio — Main Application Controller
 
-import { MODELS_CONFIG, COLOR_SWATCHES, SAMPLE_GRAPHICS } from './model-config.js';
+import { MODELS_CONFIG, COLOR_SWATCHES, SAMPLE_GRAPHICS, ETHNICITY_OPTIONS, SKIN_TONE_PRESETS } from './model-config.js';
 import { getLuminance, downloadMockupPNG, downloadTechPackJSON } from './canvas-exporter.js';
 
 // --- State ---
 const state = {
   gender: 'male',
+  ethnicity: 'caucasian', // 'caucasian', 'black', 'asian'
+  skinTone: 'natural',
+  skinDepth: 0, // -40 to +40
+  skinWarmth: 0, // -30 to +30
   style: 'crew',
   shirtColor: '#FFFFFF',
   fabricFinish: 'cotton', // 'cotton' or 'vintage'
@@ -50,6 +54,7 @@ const elements = {
   stageViewport: document.getElementById('stageViewport'),
   stageContainer: document.getElementById('stageContainer'),
   modelBaseImg: document.getElementById('modelBaseImg'),
+  shirtBaseImg: document.getElementById('shirtBaseImg'),
   garmentColorLayer: document.getElementById('garmentColorLayer'),
   garmentHighlightsImg: document.getElementById('garmentHighlightsImg'),
   garmentShadowsImg: document.getElementById('garmentShadowsImg'),
@@ -75,8 +80,17 @@ const elements = {
   graphicSelectionBox: document.getElementById('graphicSelectionBox'),
   handleRotate: document.getElementById('handleRotate'),
 
-  // Sidebar: Model & Style
+  // Sidebar: Model, Race & Skin Complexion
   genderSelector: document.getElementById('genderSelector'),
+  ethnicitySelector: document.getElementById('ethnicitySelector'),
+  skinTonesGrid: document.getElementById('skinTonesGrid'),
+  activeSkinToneLabel: document.getElementById('activeSkinToneLabel'),
+  sliderSkinDepth: document.getElementById('sliderSkinDepth'),
+  skinDepthVal: document.getElementById('skinDepthVal'),
+  sliderSkinWarmth: document.getElementById('sliderSkinWarmth'),
+  skinWarmthVal: document.getElementById('skinWarmthVal'),
+
+  // Sidebar: Style
   styleSelector: document.getElementById('styleSelector'),
 
   // Sidebar: Color
@@ -119,6 +133,8 @@ const elements = {
 
   // Summary & Export Footer
   specSummaryGarment: document.getElementById('specSummaryGarment'),
+  specSummarySkinTone: document.getElementById('specSummarySkinTone'),
+  specSummaryStyle: document.getElementById('specSummaryStyle'),
   specSummaryColor: document.getElementById('specSummaryColor'),
   specSummaryArt: document.getElementById('specSummaryArt'),
   specSummaryZone: document.getElementById('specSummaryZone'),
@@ -132,6 +148,7 @@ const elements = {
 
 // --- Initialization ---
 function init() {
+  renderSkinToneSwatches();
   renderColorSwatches();
   renderSampleArtworks();
   attachEventListeners();
@@ -143,6 +160,21 @@ function init() {
 }
 
 // --- Render Helpers ---
+
+function renderSkinToneSwatches() {
+  elements.skinTonesGrid.innerHTML = '';
+  SKIN_TONE_PRESETS.forEach(preset => {
+    const btn = document.createElement('button');
+    btn.className = `skin-swatch-btn ${preset.id === state.skinTone ? 'active' : ''}`;
+    btn.style.backgroundColor = preset.swatchHex;
+    btn.title = preset.name;
+    btn.dataset.id = preset.id;
+    btn.addEventListener('click', () => {
+      setSkinTonePreset(preset.id);
+    });
+    elements.skinTonesGrid.appendChild(btn);
+  });
+}
 
 function renderColorSwatches() {
   elements.colorSwatchesGrid.innerHTML = '';
@@ -182,10 +214,12 @@ function renderSampleArtworks() {
   });
 }
 
-// --- Model & Style Management ---
+// --- Model, Ethnicity & Skin Tone ---
 
 function getCurrentModelConfig() {
-  return MODELS_CONFIG[state.gender].styles[state.style];
+  const genderData = MODELS_CONFIG[state.gender];
+  const ethData = genderData.ethnicities[state.ethnicity] || genderData.ethnicities.caucasian;
+  return ethData.styles[state.style] || ethData.styles.crew;
 }
 
 function updateModelAndStyle() {
@@ -193,6 +227,7 @@ function updateModelAndStyle() {
   
   // Preload and switch layers
   elements.modelBaseImg.src = modelConfig.baseImage;
+  elements.shirtBaseImg.src = modelConfig.shirtImage;
   elements.garmentHighlightsImg.src = modelConfig.shadowsImage;
   elements.garmentShadowsImg.src = modelConfig.shadowsImage;
 
@@ -212,15 +247,70 @@ function updateModelAndStyle() {
 
   // Update headers and summary
   const genderLabel = MODELS_CONFIG[state.gender].label;
+  const ethData = MODELS_CONFIG[state.gender].ethnicities[state.ethnicity];
+  const ethLabel = ethData ? ethData.label.split(' / ')[0] : 'Fair';
   const styleLabel = modelConfig.label;
-  elements.headerModelLabel.textContent = genderLabel;
+
+  elements.headerModelLabel.textContent = `${genderLabel.split(' ')[0]} • ${ethLabel}`;
   elements.headerStyleLabel.textContent = styleLabel;
-  elements.specSummaryGarment.textContent = `${genderLabel} • ${styleLabel}`;
+  elements.specSummaryGarment.textContent = `${genderLabel} • ${ethData ? ethData.label : 'Fair / Caucasian'}`;
+  elements.specSummaryStyle.textContent = styleLabel;
   elements.specSummaryZone.textContent = `Chest Center • ${maxInches}`;
 
-  // Re-apply garment color
+  // Re-apply skin tone and garment color
+  applySkinToneFilter();
   applyGarmentColor();
   updateGraphicDOM();
+}
+
+function setSkinTonePreset(presetId) {
+  state.skinTone = presetId;
+  const preset = SKIN_TONE_PRESETS.find(p => p.id === presetId) || SKIN_TONE_PRESETS[0];
+  elements.activeSkinToneLabel.textContent = preset.name;
+  elements.specSummarySkinTone.textContent = preset.name;
+
+  document.querySelectorAll('.skin-swatch-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.id === presetId);
+  });
+
+  // Reset fine-tune sliders when preset is picked
+  state.skinDepth = 0;
+  state.skinWarmth = 0;
+  elements.sliderSkinDepth.value = 0;
+  elements.sliderSkinWarmth.value = 0;
+  elements.skinDepthVal.textContent = 'Default';
+  elements.skinWarmthVal.textContent = 'Neutral';
+
+  applySkinToneFilter();
+}
+
+function calculateCurrentSkinFilter() {
+  const preset = SKIN_TONE_PRESETS.find(p => p.id === state.skinTone) || SKIN_TONE_PRESETS[0];
+  let filterStr = preset.filter === 'none' ? '' : preset.filter;
+
+  // Add depth (brightness & contrast adjustment)
+  if (state.skinDepth !== 0) {
+    const b = 1.0 + (state.skinDepth / 100);
+    const c = 1.0 + (state.skinDepth < 0 ? -state.skinDepth / 250 : state.skinDepth / 200);
+    filterStr += ` brightness(${b.toFixed(2)}) contrast(${c.toFixed(2)})`;
+  }
+
+  // Add warmth (sepia & hue-rotate)
+  if (state.skinWarmth > 0) {
+    const s = (state.skinWarmth / 100) * 0.4;
+    const h = -(state.skinWarmth * 0.5);
+    filterStr += ` sepia(${s.toFixed(2)}) hue-rotate(${h.toFixed(1)}deg) saturate(1.15)`;
+  } else if (state.skinWarmth < 0) {
+    const coolHue = -state.skinWarmth * 0.4;
+    filterStr += ` hue-rotate(${coolHue.toFixed(1)}deg) saturate(0.95)`;
+  }
+
+  return filterStr.trim() || 'none';
+}
+
+function applySkinToneFilter() {
+  const filter = calculateCurrentSkinFilter();
+  elements.stageContainer.style.setProperty('--model-skin-filter', filter);
 }
 
 // --- Garment Color & Texture ---
@@ -237,7 +327,6 @@ function setShirtColor(hex, name = '') {
   elements.headerColorLabel.textContent = colorName;
   elements.specSummaryColor.textContent = `${hex.toUpperCase()} (${colorName})`;
 
-  // Update active swatch button
   document.querySelectorAll('.swatch-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.hex.toLowerCase() === hex.toLowerCase());
   });
@@ -248,8 +337,6 @@ function setShirtColor(hex, name = '') {
 function applyGarmentColor() {
   elements.stageContainer.style.setProperty('--shirt-color', state.shirtColor);
 
-  // Luminance calculation:
-  // For deep dark colors (black, navy, slate), enable subtle highlight sheen layer
   const lum = getLuminance(state.shirtColor);
   let sheen = 0;
   if (lum < 0.35) {
@@ -257,10 +344,7 @@ function applyGarmentColor() {
   }
   elements.stageContainer.style.setProperty('--sheen-opacity', sheen);
 
-  // If shirt is pure white, multiply mode looks exact; for colored shirts, multiply blends naturally
-  // Also adjust graphic blend mode preview if graphic is set to multiply
   if (state.transform.blendMode === 'multiply') {
-    // on very dark shirts, pure multiply can make black ink disappear into black fabric
     if (lum < 0.25) {
       elements.userGraphicImg.style.mixBlendMode = 'normal';
     } else {
@@ -287,7 +371,6 @@ function handleFileUpload(file) {
     const dataUrl = e.target.result;
     const testImg = new Image();
     testImg.onload = () => {
-      // Calculate file size text
       let sizeStr = '';
       if (file.size > 1024 * 1024) {
         sizeStr = `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
@@ -295,7 +378,6 @@ function handleFileUpload(file) {
         sizeStr = `${Math.round(file.size / 1024)} KB`;
       }
 
-      // Determine extension/type
       let ext = file.name.split('.').pop().toUpperCase();
       if (!ext) ext = 'IMAGE';
 
@@ -309,7 +391,6 @@ function handleFileUpload(file) {
       });
 
       showToast(`Uploaded ${file.name}`);
-      // Uncheck sample cards
       document.querySelectorAll('.sample-card').forEach(c => c.classList.remove('active'));
     };
     testImg.src = dataUrl;
@@ -336,10 +417,8 @@ function loadSampleArtwork(sample) {
 function setGraphic({ src, filename, type, dimensions, sizeText, isAnimated }) {
   state.graphic = { src, filename, type, dimensions, sizeText, isAnimated };
 
-  // Update DOM Image
   elements.userGraphicImg.src = src;
 
-  // Compute natural aspect ratio and base display size inside print zone
   const printZoneRect = elements.printAreaContainer.getBoundingClientRect();
   const maxW = printZoneRect.width > 0 ? printZoneRect.width * 0.75 : 180;
   const maxH = printZoneRect.height > 0 ? printZoneRect.height * 0.75 : 220;
@@ -357,7 +436,6 @@ function setGraphic({ src, filename, type, dimensions, sizeText, isAnimated }) {
   elements.userGraphicImg.style.width = `${baseW}px`;
   elements.userGraphicImg.style.height = `${baseH}px`;
 
-  // Reset transforms
   state.transform.offsetX = 0;
   state.transform.offsetY = 0;
   state.transform.rotation = 0;
@@ -368,7 +446,6 @@ function setGraphic({ src, filename, type, dimensions, sizeText, isAnimated }) {
   syncTransformSliders();
   updateGraphicDOM();
 
-  // Update Meta Card
   elements.metaThumbImg.src = src;
   elements.metaFileName.textContent = filename;
   elements.metaDimensions.textContent = `${dimensions.width} × ${dimensions.height} px`;
@@ -377,7 +454,6 @@ function setGraphic({ src, filename, type, dimensions, sizeText, isAnimated }) {
   elements.metaAnimBadge.classList.toggle('hidden', !isAnimated);
   elements.graphicMetaCard.classList.remove('hidden');
 
-  // Update Summary Table & Stage Tools
   elements.specSummaryArt.textContent = `${filename} (${type})`;
   elements.stageArtworkTools.classList.remove('hidden');
 }
@@ -420,7 +496,6 @@ function updateGraphicDOM() {
 
   elements.userGraphicImg.style.opacity = opacity;
 
-  // Screenprint blend mode
   const lum = getLuminance(state.shirtColor);
   if (blendMode === 'multiply' && lum >= 0.25) {
     elements.userGraphicImg.style.mixBlendMode = 'multiply';
@@ -450,7 +525,6 @@ function syncTransformSliders() {
 }
 
 function applyPresetPlacement(preset) {
-  const currentModel = getCurrentModelConfig();
   switch (preset) {
     case 'center':
       state.transform.offsetX = 0;
@@ -459,7 +533,6 @@ function applyPresetPlacement(preset) {
       state.transform.rotation = 0;
       break;
     case 'pocket':
-      // Move to left chest / crest position
       state.transform.offsetX = 45;
       state.transform.offsetY = -35;
       state.transform.scale = 0.45;
@@ -482,13 +555,12 @@ function applyPresetPlacement(preset) {
   updateGraphicDOM();
 }
 
-// --- Direct Manipulation (Mouse & Touch Drag / Rotate / Resize) ---
+// --- Direct Manipulation ---
 
 function setupDirectManipulation() {
   let isDragging = false;
   let isRotating = false;
   let isResizing = false;
-  let resizeDir = null;
 
   let startX = 0;
   let startY = 0;
@@ -501,9 +573,7 @@ function setupDirectManipulation() {
 
   const wrapper = elements.graphicTransformWrapper;
 
-  // Main wrapper drag
   wrapper.addEventListener('pointerdown', (e) => {
-    // If clicking a handle, don't trigger wrapper drag
     if (e.target.classList.contains('handle')) return;
 
     e.preventDefault();
@@ -517,7 +587,6 @@ function setupDirectManipulation() {
     initialOffsetY = state.transform.offsetY;
   });
 
-  // Rotation Handle
   elements.handleRotate.addEventListener('pointerdown', (e) => {
     e.stopPropagation();
     e.preventDefault();
@@ -532,13 +601,11 @@ function setupDirectManipulation() {
     initialRotation = state.transform.rotation - (currentAngleRad * 180 / Math.PI);
   });
 
-  // Resize Handles
   document.querySelectorAll('.resize-handle').forEach(handle => {
     handle.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
       e.preventDefault();
       isResizing = true;
-      resizeDir = handle.dataset.dir;
       handle.setPointerCapture(e.pointerId);
 
       startX = e.clientX;
@@ -551,7 +618,6 @@ function setupDirectManipulation() {
     });
   });
 
-  // Pointer Move
   window.addEventListener('pointermove', (e) => {
     if (isDragging) {
       const dx = (e.clientX - startX) / state.zoom;
@@ -563,7 +629,6 @@ function setupDirectManipulation() {
     } else if (isRotating) {
       const rad = Math.atan2(e.clientY - centerY, e.clientX - centerX);
       let deg = Math.round((rad * 180 / Math.PI) + initialRotation);
-      // Normalize to -180 .. 180
       while (deg > 180) deg -= 360;
       while (deg < -180) deg += 360;
       state.transform.rotation = deg;
@@ -582,7 +647,6 @@ function setupDirectManipulation() {
     }
   });
 
-  // Pointer Up
   window.addEventListener('pointerup', () => {
     if (isDragging) {
       isDragging = false;
@@ -604,6 +668,41 @@ function attachEventListeners() {
       state.gender = btn.dataset.gender;
       updateModelAndStyle();
     });
+  });
+
+  // Ethnicity buttons
+  elements.ethnicitySelector.querySelectorAll('.eth-card').forEach(card => {
+    card.addEventListener('click', () => {
+      elements.ethnicitySelector.querySelectorAll('.eth-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      state.ethnicity = card.dataset.ethnicity;
+      updateModelAndStyle();
+    });
+  });
+
+  // Skin Depth & Warmth Sliders
+  elements.sliderSkinDepth.addEventListener('input', (e) => {
+    state.skinDepth = Number(e.target.value);
+    if (state.skinDepth === 0) {
+      elements.skinDepthVal.textContent = 'Default';
+    } else if (state.skinDepth > 0) {
+      elements.skinDepthVal.textContent = `+${state.skinDepth} (Fairer)`;
+    } else {
+      elements.skinDepthVal.textContent = `${state.skinDepth} (Deeper)`;
+    }
+    applySkinToneFilter();
+  });
+
+  elements.sliderSkinWarmth.addEventListener('input', (e) => {
+    state.skinWarmth = Number(e.target.value);
+    if (state.skinWarmth === 0) {
+      elements.skinWarmthVal.textContent = 'Neutral';
+    } else if (state.skinWarmth > 0) {
+      elements.skinWarmthVal.textContent = `+${state.skinWarmth} (Warm/Gold)`;
+    } else {
+      elements.skinWarmthVal.textContent = `${state.skinWarmth} (Cool/Rosy)`;
+    }
+    applySkinToneFilter();
   });
 
   // Style buttons
@@ -630,7 +729,6 @@ function attachEventListeners() {
     }
   });
 
-  // EyeDropper API (if supported)
   if (window.EyeDropper) {
     elements.btnEyedropper.addEventListener('click', async () => {
       try {
@@ -640,7 +738,7 @@ function attachEventListeners() {
           setShirtColor(res.sRGBHex);
         }
       } catch (e) {
-        // user canceled eyedropper
+        // user canceled
       }
     });
   } else {
@@ -663,7 +761,7 @@ function attachEventListeners() {
     });
   });
 
-  // Drag and Drop Zone
+  // Dropzone
   elements.dropzone.addEventListener('dragover', (e) => {
     e.preventDefault();
     elements.dropzone.classList.add('drag-over');
@@ -684,11 +782,11 @@ function attachEventListeners() {
   elements.fileInput.addEventListener('change', (e) => {
     if (e.target.files && e.target.files.length > 0) {
       handleFileUpload(e.target.files[0]);
-      e.target.value = ''; // allow re-upload of same file
+      e.target.value = '';
     }
   });
 
-  // Remove Artwork Button
+  // Remove Artwork
   elements.btnRemoveArtwork.addEventListener('click', clearArtwork);
   elements.btnToolRemove.addEventListener('click', clearArtwork);
 
@@ -799,21 +897,17 @@ function attachEventListeners() {
       showLoading(true);
       const modelConfig = getCurrentModelConfig();
       const stageRect = elements.stageContainer.getBoundingClientRect();
-      const printZoneRect = elements.printAreaContainer.getBoundingClientRect();
 
-      // Convert wrapper offset to stage coordinates
       const graphicRect = elements.graphicTransformWrapper.getBoundingClientRect();
       const graphicCenterX = graphicRect.left + graphicRect.width / 2 - stageRect.left;
       const graphicCenterY = graphicRect.top + graphicRect.height / 2 - stageRect.top;
 
-      const imgWidth = elements.userGraphicImg.naturalWidth || elements.userGraphicImg.clientWidth;
-      const imgHeight = elements.userGraphicImg.naturalHeight || elements.userGraphicImg.clientHeight;
-
-      const filename = `tshirt-${state.gender}-${state.style}-${state.shirtColor.replace('#', '')}.png`;
+      const filename = `tshirt-${state.gender}-${state.ethnicity}-${state.style}-${state.shirtColor.replace('#', '')}.png`;
 
       await downloadMockupPNG({
         modelConfig,
         shirtColorHex: state.shirtColor,
+        skinToneFilter: calculateCurrentSkinFilter(),
         graphicImgElement: state.graphic.src ? elements.userGraphicImg : null,
         graphicState: {
           x: graphicCenterX,
@@ -848,12 +942,18 @@ function attachEventListeners() {
   // Export Spec Action
   const triggerExportSpec = () => {
     const modelConfig = getCurrentModelConfig();
+    const ethData = MODELS_CONFIG[state.gender].ethnicities[state.ethnicity];
     const spec = {
       project: 'Atelier T-Shirt Custom Studio',
       timestamp: new Date().toISOString(),
-      apparel: {
-        model: MODELS_CONFIG[state.gender].label,
+      modelFigure: {
         gender: state.gender,
+        genderLabel: MODELS_CONFIG[state.gender].label,
+        raceEthnicity: ethData ? ethData.label : 'Fair / Caucasian',
+        skinTonePreset: state.skinTone,
+        skinToneFilter: calculateCurrentSkinFilter(),
+      },
+      apparel: {
         style: modelConfig.label,
         fabricColorHex: state.shirtColor,
         fabricFinish: state.fabricFinish,
@@ -877,7 +977,7 @@ function attachEventListeners() {
         }
       }
     };
-    downloadTechPackJSON(spec, `tshirt-techpack-${state.gender}-${state.style}.json`);
+    downloadTechPackJSON(spec, `tshirt-techpack-${state.gender}-${state.ethnicity}-${state.style}.json`);
     showToast('Tech Pack JSON exported!');
   };
 

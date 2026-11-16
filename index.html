@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Atelier T-Shirt Lab — Custom Apparel Studio & 3D Mockup Builder</title>
-    <meta name="description" content="Design, customize, and model your custom t-shirts on male and female human figures. Supports GIFs, JPEGs, and WebP artwork with configurable colors and neck styles." />
+    <meta name="description" content="Design, customize, and model your custom t-shirts on diverse male and female human figures. Supports GIFs, JPEGs, and WebP artwork with configurable colors and neck styles." />
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -31,7 +31,7 @@
         <div class="header-specs">
           <div class="spec-pill" id="specModelPill">
             <span class="pill-dot"></span>
-            <span id="headerModelLabel">Male Model</span>
+            <span id="headerModelLabel">Male &bull; Fair</span>
           </div>
           <div class="spec-pill" id="specStylePill">
             <span id="headerStyleLabel">Round Neck</span>
@@ -106,16 +106,19 @@
 
           <!-- The Stage Canvas / Garment Container -->
           <div class="stage-container" id="stageContainer">
-            <!-- 1. Base Model Photo -->
+            <!-- 1. Base Model Photo (With dynamic skin tone & complexion filter) -->
             <img id="modelBaseImg" class="stage-layer model-base" alt="Human Model" src="/assets/models/male_crew.jpg" />
 
-            <!-- 2. Garment Color Tint Layer (Masked to Garment Alpha) -->
+            <!-- 2. Pure White Shirt Underlay (Protects garment from skin tone tinting) -->
+            <img id="shirtBaseImg" class="stage-layer shirt-base-cutout" alt="Garment Base" src="/assets/models/male_crew_shirt.png" />
+
+            <!-- 3. Garment Color Tint Layer (Masked to Garment Alpha) -->
             <div id="garmentColorLayer" class="stage-layer garment-color-layer"></div>
 
-            <!-- 3. Fabric Highlight Sheen Layer (for deep black/dark colors) -->
+            <!-- 4. Fabric Highlight Sheen Layer (for deep black/dark colors) -->
             <img id="garmentHighlightsImg" class="stage-layer garment-highlights-layer" alt="Fabric Sheen" src="/assets/models/male_crew_shadows.png" />
 
-            <!-- 4. Printable Area Container -->
+            <!-- 5. Printable Area Container -->
             <div id="printAreaContainer" class="print-area-container">
               <!-- Printable Zone Guide (dashed outline & dimension badge) -->
               <div id="printZoneGuide" class="print-zone-guide">
@@ -137,13 +140,13 @@
               </div>
             </div>
 
-            <!-- 5. Fabric Wrinkles & Creases Shadow Overlay (Over the artwork for photorealism) -->
+            <!-- 6. Fabric Wrinkles & Creases Shadow Overlay (Over the artwork for photorealism) -->
             <img id="garmentShadowsImg" class="stage-layer garment-shadows-layer" alt="Fabric Creases" src="/assets/models/male_crew_shadows.png" />
 
             <!-- Loading Spinner Overlay -->
             <div id="stageLoadingOverlay" class="stage-loading-overlay hidden">
               <div class="spinner"></div>
-              <span>Rendering Studio Lighting...</span>
+              <span>Updating Model Figure...</span>
             </div>
           </div>
         </section>
@@ -152,19 +155,19 @@
         <aside class="studio-sidebar">
           <div class="sidebar-scroll">
 
-            <!-- Section 1: Human Model & Garment Style -->
+            <!-- Section 1: Human Model, Race & Skin Colour -->
             <section class="panel-card">
               <div class="panel-header">
                 <span class="step-num">01</span>
                 <div>
-                  <h2 class="panel-title">Model & Style</h2>
-                  <p class="panel-desc">Select human figure and neckline silhouette</p>
+                  <h2 class="panel-title">Model Figure & Complexion</h2>
+                  <p class="panel-desc">Configure model gender, ethnicity, and skin tone</p>
                 </div>
               </div>
 
               <!-- Gender Switcher -->
               <div class="control-group">
-                <label class="control-label">Human Model</label>
+                <label class="control-label">Model Gender</label>
                 <div class="segmented-control" id="genderSelector">
                   <button class="seg-btn active" data-gender="male">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0113 0v2"/></svg>
@@ -177,9 +180,74 @@
                 </div>
               </div>
 
+              <!-- Race / Ethnicity Selector -->
+              <div class="control-group">
+                <label class="control-label">Race / Ethnicity</label>
+                <div class="ethnicity-cards-grid" id="ethnicitySelector">
+                  <button class="eth-card active" data-ethnicity="caucasian">
+                    <div class="eth-badge-row">
+                      <span class="eth-swatch" style="background-color: #E2B89D;"></span>
+                      <span class="eth-name">Fair / Caucasian</span>
+                    </div>
+                    <span class="eth-desc">Light / European</span>
+                  </button>
+                  <button class="eth-card" data-ethnicity="black">
+                    <div class="eth-badge-row">
+                      <span class="eth-swatch" style="background-color: #5D351D;"></span>
+                      <span class="eth-name">Black / African</span>
+                    </div>
+                    <span class="eth-desc">Deep / African</span>
+                  </button>
+                  <button class="eth-card" data-ethnicity="asian">
+                    <div class="eth-badge-row">
+                      <span class="eth-swatch" style="background-color: #DEB58A;"></span>
+                      <span class="eth-name">Asian / East Asian</span>
+                    </div>
+                    <span class="eth-desc">Warm / East Asian</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Model Skin Tone / Colour Presets -->
+              <div class="control-group">
+                <div class="label-with-val">
+                  <label class="control-label">Skin Tone & Complexion</label>
+                  <span class="val-badge" id="activeSkinToneLabel">Natural Studio Tone</span>
+                </div>
+                <div class="skin-tones-grid" id="skinTonesGrid"></div>
+              </div>
+
+              <!-- Fine-tune Skin Tone Sliders -->
+              <div class="skin-sliders-box">
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <span>Complexion Depth</span>
+                    <span class="slider-val" id="skinDepthVal">Default</span>
+                  </div>
+                  <input type="range" id="sliderSkinDepth" min="-40" max="40" value="0" />
+                </div>
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <span>Undertone Warmth</span>
+                    <span class="slider-val" id="skinWarmthVal">Neutral</span>
+                  </div>
+                  <input type="range" id="sliderSkinWarmth" min="-30" max="30" value="0" />
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 2: Garment Silhouette & Style -->
+            <section class="panel-card">
+              <div class="panel-header">
+                <span class="step-num">02</span>
+                <div>
+                  <h2 class="panel-title">Garment Style</h2>
+                  <p class="panel-desc">Select neckline cut and silhouette</p>
+                </div>
+              </div>
+
               <!-- Garment Style Switcher -->
               <div class="control-group">
-                <label class="control-label">Garment Style</label>
                 <div class="style-cards-grid" id="styleSelector">
                   <!-- Round Neck -->
                   <button class="style-card active" data-style="crew">
@@ -225,10 +293,10 @@
               </div>
             </section>
 
-            <!-- Section 2: Garment Color -->
+            <!-- Section 3: Garment Color -->
             <section class="panel-card">
               <div class="panel-header">
-                <span class="step-num">02</span>
+                <span class="step-num">03</span>
                 <div>
                   <h2 class="panel-title">Garment Color</h2>
                   <p class="panel-desc">Choose from studio swatches or custom hex</p>
@@ -262,10 +330,10 @@
               </div>
             </section>
 
-            <!-- Section 3: Artwork & Upload -->
+            <!-- Section 4: Artwork & Upload -->
             <section class="panel-card">
               <div class="panel-header">
-                <span class="step-num">03</span>
+                <span class="step-num">04</span>
                 <div>
                   <h2 class="panel-title">Upload Graphic</h2>
                   <p class="panel-desc">GIFs (static or animated!), JPEGs, WebP & PNG</p>
@@ -317,10 +385,10 @@
               </div>
             </section>
 
-            <!-- Section 4: Print Placement & Styling -->
+            <!-- Section 5: Print Placement & Styling -->
             <section class="panel-card" id="placementPanel">
               <div class="panel-header">
-                <span class="step-num">04</span>
+                <span class="step-num">05</span>
                 <div>
                   <h2 class="panel-title">Placement & Print</h2>
                   <p class="panel-desc">Position, scale, rotation and ink blending</p>
@@ -418,10 +486,10 @@
               </div>
             </section>
 
-            <!-- Section 5: Specification Summary & Export -->
+            <!-- Section 6: Specification Summary & Export -->
             <section class="panel-card export-card">
               <div class="panel-header">
-                <span class="step-num">05</span>
+                <span class="step-num">06</span>
                 <div>
                   <h2 class="panel-title">Production Summary</h2>
                   <p class="panel-desc">Ready for high-res rendering or production specs</p>
@@ -430,11 +498,19 @@
 
               <div class="spec-table">
                 <div class="spec-row">
-                  <span class="spec-key">Garment</span>
-                  <span class="spec-value" id="specSummaryGarment">Male Model &bull; Round Neck</span>
+                  <span class="spec-key">Figure & Race</span>
+                  <span class="spec-value" id="specSummaryGarment">Male &bull; Fair / Caucasian</span>
                 </div>
                 <div class="spec-row">
-                  <span class="spec-key">Color Hex</span>
+                  <span class="spec-key">Skin Complexion</span>
+                  <span class="spec-value" id="specSummarySkinTone">Natural Studio Tone</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-key">Garment Style</span>
+                  <span class="spec-value" id="specSummaryStyle">Round Neck (Crew)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-key">Garment Color</span>
                   <span class="spec-value code-font" id="specSummaryColor">#FFFFFF (Crisp White)</span>
                 </div>
                 <div class="spec-row">
