@@ -290,6 +290,8 @@ function init() {
   // Set default model figure (clean state: no sample artwork pre-loaded)
   updateModelAndStyle();
   clearArtwork();
+
+  window.addEventListener('resize', syncGraphicDOMDimensions);
 }
 
 // --- Render Helpers ---
@@ -394,6 +396,7 @@ function updateModelAndStyle() {
 
   applySkinToneFilter();
   applyGarmentColor();
+  syncGraphicDOMDimensions();
   updateGraphicDOM();
 }
 
@@ -591,27 +594,44 @@ function loadSampleArtwork(sample) {
   testImg.src = sample.url;
 }
 
+function calculateGraphicBaseCanvasSize(dimensions) {
+  if (!dimensions || !dimensions.width || !dimensions.height) {
+    return { baseCanvasW: 240, baseCanvasH: 240 };
+  }
+  const aspect = dimensions.width / dimensions.height;
+  const printArea = state.printArea || { width: 36, height: 35 };
+  const maxCanvasW = ((printArea.width / 100) * 896) * 0.75;
+  const maxCanvasH = ((printArea.height / 100) * 1200) * 0.75;
+
+  let baseCanvasW, baseCanvasH;
+  if (aspect >= (maxCanvasW / maxCanvasH)) {
+    baseCanvasW = maxCanvasW;
+    baseCanvasH = baseCanvasW / aspect;
+  } else {
+    baseCanvasH = maxCanvasH;
+    baseCanvasW = baseCanvasH * aspect;
+  }
+  return { baseCanvasW, baseCanvasH };
+}
+
+function syncGraphicDOMDimensions() {
+  if (!state.graphic.src || !state.graphic.dimensions) return;
+  const { baseCanvasW, baseCanvasH } = calculateGraphicBaseCanvasSize(state.graphic.dimensions);
+  state.graphic.baseCanvasW = baseCanvasW;
+  state.graphic.baseCanvasH = baseCanvasH;
+
+  const stageW = elements.stageContainer.offsetWidth || 560;
+  const domScale = stageW / 896;
+  elements.userGraphicImg.style.width = `${Math.round(baseCanvasW * domScale)}px`;
+  elements.userGraphicImg.style.height = `${Math.round(baseCanvasH * domScale)}px`;
+}
+
 function setGraphic({ src, filename, type, dimensions, sizeText, isAnimated }) {
   state.graphic = { src, filename, type, dimensions, sizeText, isAnimated };
 
   elements.userGraphicImg.src = src;
 
-  const printZoneRect = elements.printAreaContainer.getBoundingClientRect();
-  const maxW = printZoneRect.width > 0 ? printZoneRect.width * 0.75 : 180;
-  const maxH = printZoneRect.height > 0 ? printZoneRect.height * 0.75 : 220;
-
-  const aspect = dimensions.width / dimensions.height;
-  let baseW, baseH;
-  if (aspect >= 1) {
-    baseW = Math.min(maxW, dimensions.width);
-    baseH = baseW / aspect;
-  } else {
-    baseH = Math.min(maxH, dimensions.height);
-    baseW = baseH * aspect;
-  }
-
-  elements.userGraphicImg.style.width = `${baseW}px`;
-  elements.userGraphicImg.style.height = `${baseH}px`;
+  syncGraphicDOMDimensions();
 
   // Reset transforms strictly centered on model chest
   state.transform.offsetX = 0;
@@ -1315,11 +1335,10 @@ function attachEventListeners() {
       const canvasGraphicX = printCenterX + (state.transform.offsetX * pxRatioX);
       const canvasGraphicY = printCenterY + (state.transform.offsetY * pxRatioY);
 
-      const graphicBaseW = elements.userGraphicImg.offsetWidth || 200;
-      const graphicBaseH = elements.userGraphicImg.offsetHeight || 200;
-
-      const canvasGraphicW = graphicBaseW * pxRatioX * state.transform.scale;
-      const canvasGraphicH = graphicBaseH * pxRatioY * state.transform.scale;
+      // Calibrated base canvas dimensions strictly preserving natural image aspect ratio
+      const { baseCanvasW, baseCanvasH } = calculateGraphicBaseCanvasSize(state.graphic.dimensions);
+      const canvasGraphicW = baseCanvasW * state.transform.scale;
+      const canvasGraphicH = baseCanvasH * state.transform.scale;
 
       const filename = `tshirt-${state.gender}-${state.ethnicity}-${state.style}-${state.shirtColor.replace('#', '')}.png`;
 

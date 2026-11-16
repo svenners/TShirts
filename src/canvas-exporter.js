@@ -131,6 +131,17 @@ export async function renderMockupCanvas({
       canvasGraphicH = graphicState.height * scaleY * graphicState.scale;
     }
 
+    // Guarantee that graphic preserves its natural aspect ratio with 0% distortion
+    const naturalW = graphicImgElement.naturalWidth || graphicImgElement.width;
+    const naturalH = graphicImgElement.naturalHeight || graphicImgElement.height;
+    if (naturalW && naturalH && canvasGraphicW > 0 && canvasGraphicH > 0) {
+      const naturalAspect = naturalW / naturalH;
+      const targetAspect = canvasGraphicW / canvasGraphicH;
+      if (Math.abs(targetAspect - naturalAspect) > 0.005) {
+        canvasGraphicH = canvasGraphicW / naturalAspect;
+      }
+    }
+
     // Translate to center of graphic
     ctx.translate(canvasGraphicX, canvasGraphicY);
     ctx.rotate((graphicState.rotation * Math.PI) / 180);
