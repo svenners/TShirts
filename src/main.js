@@ -57,7 +57,9 @@ const elements = {
   // Stage Viewport & Layers
   stageViewport: document.getElementById('stageViewport'),
   stageContainer: document.getElementById('stageContainer'),
-  modelBaseImg: document.getElementById('modelBaseImg'),
+  modelBgImg: document.getElementById('modelBgImg'),
+  modelPersonImg: document.getElementById('modelPersonImg'),
+  modelBaseImg: document.getElementById('modelPersonImg') || document.getElementById('modelBaseImg'),
   shirtBaseImg: document.getElementById('shirtBaseImg'),
   garmentColorCanvas: document.getElementById('garmentColorCanvas'),
   garmentHighlightsImg: document.getElementById('garmentHighlightsImg'),
@@ -249,8 +251,15 @@ function getCurrentModelConfig() {
 function updateModelAndStyle() {
   const modelConfig = getCurrentModelConfig();
   
-  // Base layers
-  elements.modelBaseImg.src = modelConfig.baseImage;
+  // Base layers: neutral studio background is untouched, person receives complexion filters
+  if (elements.modelBgImg) {
+    elements.modelBgImg.src = modelConfig.bgImage || modelConfig.baseImage;
+  }
+  if (elements.modelPersonImg) {
+    elements.modelPersonImg.src = modelConfig.personImage || modelConfig.baseImage;
+  } else if (elements.modelBaseImg) {
+    elements.modelBaseImg.src = modelConfig.baseImage;
+  }
   elements.shirtBaseImg.src = modelConfig.shirtImage;
   elements.garmentHighlightsImg.src = modelConfig.shadowsImage;
   elements.garmentShadowsImg.src = modelConfig.shadowsImage;

@@ -56,13 +56,17 @@ export async function renderMockupCanvas({
   canvas.height = canvasHeight;
   const ctx = canvas.getContext('2d');
 
-  // 1. Load and draw base model image with skin tone filter applied
-  const baseImg = await loadImage(modelConfig.baseImage);
+  // 1. Studio Background: Draw static studio background untouched (no skin filter)
+  const bgImg = await loadImage(modelConfig.bgImage || modelConfig.baseImage);
+  ctx.drawImage(bgImg, 0, 0, canvasWidth, canvasHeight);
+
+  // 2. Human Model Cutout: Apply skin tone / complexion filter ONLY to the person figure
+  const personImg = await loadImage(modelConfig.personImage || modelConfig.baseImage);
   ctx.save();
   if (skinToneFilter && skinToneFilter !== 'none') {
     ctx.filter = skinToneFilter;
   }
-  ctx.drawImage(baseImg, 0, 0, canvasWidth, canvasHeight);
+  ctx.drawImage(personImg, 0, 0, canvasWidth, canvasHeight);
   ctx.restore();
 
   // 2. Garment layer: Draw original white shirt cutout first so skin filter doesn't bleed into shirt

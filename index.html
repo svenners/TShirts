@@ -106,8 +106,11 @@
 
           <!-- The Stage Canvas / Garment Container -->
           <div class="stage-container" id="stageContainer">
-            <!-- 1. Base Model Photo (With dynamic complexion filter) -->
-            <img id="modelBaseImg" class="stage-layer model-base" alt="Human Model" src="/assets/models/male_crew.jpg" />
+            <!-- 1. Studio Background Layer (Static studio backdrop, completely immune to skin tone filters) -->
+            <img id="modelBgImg" class="stage-layer model-bg" alt="Studio Background" src="/assets/models/male_crew_bg.jpg" />
+
+            <!-- 2. Human Model Figure Cutout (Receives dynamic skin tone and complexion filters ONLY) -->
+            <img id="modelPersonImg" class="stage-layer model-person" alt="Human Model" src="/assets/models/male_crew_person.png" />
 
             <!-- 2. Pure White Shirt Underlay (Isolates garment fabric) -->
             <img id="shirtBaseImg" class="stage-layer shirt-base-cutout" alt="Garment Base" src="/assets/models/male_crew_shirt.png" />

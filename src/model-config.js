@@ -26,6 +26,8 @@ export const MODELS_CONFIG = {
           crew: {
             label: 'Round Neck (Crew)',
             baseImage: '/assets/models/male_crew.jpg',
+            personImage: '/assets/models/male_crew_person.png',
+            bgImage: '/assets/models/male_crew_bg.jpg',
             shirtImage: '/assets/models/male_crew_shirt.png',
             maskImage: '/assets/models/male_crew_mask.png',
             shadowsImage: '/assets/models/male_crew_shadows.png',
@@ -34,6 +36,8 @@ export const MODELS_CONFIG = {
           vneck: {
             label: 'V-Neck',
             baseImage: '/assets/models/male_vneck.jpg',
+            personImage: '/assets/models/male_vneck_person.png',
+            bgImage: '/assets/models/male_vneck_bg.jpg',
             shirtImage: '/assets/models/male_vneck_shirt.png',
             maskImage: '/assets/models/male_vneck_mask.png',
             shadowsImage: '/assets/models/male_vneck_shadows.png',
@@ -42,6 +46,8 @@ export const MODELS_CONFIG = {
           vest: {
             label: 'Vest Top (Tank)',
             baseImage: '/assets/models/male_vest.jpg',
+            personImage: '/assets/models/male_vest_person.png',
+            bgImage: '/assets/models/male_vest_bg.jpg',
             shirtImage: '/assets/models/male_vest_shirt.png',
             maskImage: '/assets/models/male_vest_mask.png',
             shadowsImage: '/assets/models/male_vest_shadows.png',
@@ -55,6 +61,8 @@ export const MODELS_CONFIG = {
           crew: {
             label: 'Round Neck (Crew)',
             baseImage: '/assets/models/male_black_crew.jpg',
+            personImage: '/assets/models/male_black_crew_person.png',
+            bgImage: '/assets/models/male_black_crew_bg.jpg',
             shirtImage: '/assets/models/male_black_crew_shirt.png',
             maskImage: '/assets/models/male_black_crew_mask.png',
             shadowsImage: '/assets/models/male_black_crew_shadows.png',
@@ -63,6 +71,8 @@ export const MODELS_CONFIG = {
           vneck: {
             label: 'V-Neck',
             baseImage: '/assets/models/male_black_vneck.jpg',
+            personImage: '/assets/models/male_black_vneck_person.png',
+            bgImage: '/assets/models/male_black_vneck_bg.jpg',
             shirtImage: '/assets/models/male_black_vneck_shirt.png',
             maskImage: '/assets/models/male_black_vneck_mask.png',
             shadowsImage: '/assets/models/male_black_vneck_shadows.png',
@@ -71,6 +81,8 @@ export const MODELS_CONFIG = {
           vest: {
             label: 'Vest Top (Tank)',
             baseImage: '/assets/models/male_black_vest.jpg',
+            personImage: '/assets/models/male_black_vest_person.png',
+            bgImage: '/assets/models/male_black_vest_bg.jpg',
             shirtImage: '/assets/models/male_black_vest_shirt.png',
             maskImage: '/assets/models/male_black_vest_mask.png',
             shadowsImage: '/assets/models/male_black_vest_shadows.png',
@@ -84,6 +96,8 @@ export const MODELS_CONFIG = {
           crew: {
             label: 'Round Neck (Crew)',
             baseImage: '/assets/models/male_asian_crew.jpg',
+            personImage: '/assets/models/male_asian_crew_person.png',
+            bgImage: '/assets/models/male_asian_crew_bg.jpg',
             shirtImage: '/assets/models/male_asian_crew_shirt.png',
             maskImage: '/assets/models/male_asian_crew_mask.png',
             shadowsImage: '/assets/models/male_asian_crew_shadows.png',
@@ -92,6 +106,8 @@ export const MODELS_CONFIG = {
           vneck: {
             label: 'V-Neck',
             baseImage: '/assets/models/male_asian_crew.jpg',
+            personImage: '/assets/models/male_asian_crew_person.png',
+            bgImage: '/assets/models/male_asian_crew_bg.jpg',
             shirtImage: '/assets/models/male_asian_crew_shirt.png',
             maskImage: '/assets/models/male_asian_crew_mask.png',
             shadowsImage: '/assets/models/male_asian_crew_shadows.png',
@@ -100,6 +116,8 @@ export const MODELS_CONFIG = {
           vest: {
             label: 'Vest Top (Tank)',
             baseImage: '/assets/models/male_asian_crew.jpg',
+            personImage: '/assets/models/male_asian_crew_person.png',
+            bgImage: '/assets/models/male_asian_crew_bg.jpg',
             shirtImage: '/assets/models/male_asian_crew_shirt.png',
             maskImage: '/assets/models/male_asian_crew_mask.png',
             shadowsImage: '/assets/models/male_asian_crew_shadows.png',
@@ -118,6 +136,8 @@ export const MODELS_CONFIG = {
           crew: {
             label: 'Round Neck (Crew)',
             baseImage: '/assets/models/female_crew.jpg',
+            personImage: '/assets/models/female_crew_person.png',
+            bgImage: '/assets/models/female_crew_bg.jpg',
             shirtImage: '/assets/models/female_crew_shirt.png',
             maskImage: '/assets/models/female_crew_mask.png',
             shadowsImage: '/assets/models/female_crew_shadows.png',
@@ -126,6 +146,8 @@ export const MODELS_CONFIG = {
           vneck: {
             label: 'V-Neck',
             baseImage: '/assets/models/female_vneck.jpg',
+            personImage: '/assets/models/female_vneck_person.png',
+            bgImage: '/assets/models/female_vneck_bg.jpg',
             shirtImage: '/assets/models/female_vneck_shirt.png',
             maskImage: '/assets/models/female_vneck_mask.png',
             shadowsImage: '/assets/models/female_vneck_shadows.png',
@@ -134,6 +156,8 @@ export const MODELS_CONFIG = {
           vest: {
             label: 'Vest Top (Tank)',
             baseImage: '/assets/models/female_vest.jpg',
+            personImage: '/assets/models/female_vest_person.png',
+            bgImage: '/assets/models/female_vest_bg.jpg',
             shirtImage: '/assets/models/female_vest_shirt.png',
             maskImage: '/assets/models/female_vest_mask.png',
             shadowsImage: '/assets/models/female_vest_shadows.png',
@@ -147,6 +171,8 @@ export const MODELS_CONFIG = {
           crew: {
             label: 'Round Neck (Crew)',
             baseImage: '/assets/models/female_black_crew.jpg',
+            personImage: '/assets/models/female_black_crew_person.png',
+            bgImage: '/assets/models/female_black_crew_bg.jpg',
             shirtImage: '/assets/models/female_black_crew_shirt.png',
             maskImage: '/assets/models/female_black_crew_mask.png',
             shadowsImage: '/assets/models/female_black_crew_shadows.png',
@@ -155,6 +181,8 @@ export const MODELS_CONFIG = {
           vneck: {
             label: 'V-Neck',
             baseImage: '/assets/models/female_black_crew.jpg',
+            personImage: '/assets/models/female_black_crew_person.png',
+            bgImage: '/assets/models/female_black_crew_bg.jpg',
             shirtImage: '/assets/models/female_black_crew_shirt.png',
             maskImage: '/assets/models/female_black_crew_mask.png',
             shadowsImage: '/assets/models/female_black_crew_shadows.png',
@@ -163,6 +191,8 @@ export const MODELS_CONFIG = {
           vest: {
             label: 'Vest Top (Tank)',
             baseImage: '/assets/models/female_black_vest.jpg',
+            personImage: '/assets/models/female_black_vest_person.png',
+            bgImage: '/assets/models/female_black_vest_bg.jpg',
             shirtImage: '/assets/models/female_black_vest_shirt.png',
             maskImage: '/assets/models/female_black_vest_mask.png',
             shadowsImage: '/assets/models/female_black_vest_shadows.png',
@@ -176,6 +206,8 @@ export const MODELS_CONFIG = {
           crew: {
             label: 'Round Neck (Crew)',
             baseImage: '/assets/models/female_asian_crew.jpg',
+            personImage: '/assets/models/female_asian_crew_person.png',
+            bgImage: '/assets/models/female_asian_crew_bg.jpg',
             shirtImage: '/assets/models/female_asian_crew_shirt.png',
             maskImage: '/assets/models/female_asian_crew_mask.png',
             shadowsImage: '/assets/models/female_asian_crew_shadows.png',
@@ -184,6 +216,8 @@ export const MODELS_CONFIG = {
           vneck: {
             label: 'V-Neck',
             baseImage: '/assets/models/female_asian_crew.jpg',
+            personImage: '/assets/models/female_asian_crew_person.png',
+            bgImage: '/assets/models/female_asian_crew_bg.jpg',
             shirtImage: '/assets/models/female_asian_crew_shirt.png',
             maskImage: '/assets/models/female_asian_crew_mask.png',
             shadowsImage: '/assets/models/female_asian_crew_shadows.png',
@@ -192,6 +226,8 @@ export const MODELS_CONFIG = {
           vest: {
             label: 'Vest Top (Tank)',
             baseImage: '/assets/models/female_asian_crew.jpg',
+            personImage: '/assets/models/female_asian_crew_person.png',
+            bgImage: '/assets/models/female_asian_crew_bg.jpg',
             shirtImage: '/assets/models/female_asian_crew_shirt.png',
             maskImage: '/assets/models/female_asian_crew_mask.png',
             shadowsImage: '/assets/models/female_asian_crew_shadows.png',

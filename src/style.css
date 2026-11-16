@@ -354,12 +354,21 @@ body {
   pointer-events: none;
 }
 
-/* Base model photo with dynamic complexion filter */
+/* Studio background: neutral studio wall and lighting, unaffected by any filters */
+.model-bg {
+  z-index: 5;
+  display: block;
+  pointer-events: none;
+}
+
+/* Model figure cutout: dynamic skin tone and complexion filter applied ONLY to the person */
+.model-person,
 .model-base {
   z-index: 10;
   display: block;
   filter: var(--model-skin-filter, none);
   transition: filter 0.15s ease-out;
+  pointer-events: none;
 }
 
 /* Pure white shirt cutout underlay: isolates garment fabric from skin filter */
