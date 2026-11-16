@@ -292,6 +292,10 @@ function init() {
   clearArtwork();
 
   window.addEventListener('resize', syncGraphicDOMDimensions);
+  if (window.ResizeObserver && elements.stageContainer) {
+    const ro = new ResizeObserver(() => syncGraphicDOMDimensions());
+    ro.observe(elements.stageContainer);
+  }
 }
 
 // --- Render Helpers ---
@@ -957,10 +961,17 @@ function setupPrintZoneResizing() {
 function setupCollapsiblePanels() {
   const panels = document.querySelectorAll('.panel-card');
 
+  const updateExpandedState = () => {
+    const hasExpanded = Array.from(panels).some(p => !p.classList.contains('collapsed'));
+    document.body.classList.toggle('has-expanded-panel', hasExpanded);
+    syncGraphicDOMDimensions();
+  };
+
   // Ensure all sidebar panels start collapsed by default
   panels.forEach(panel => {
     panel.classList.add('collapsed');
   });
+  updateExpandedState();
 
   panels.forEach(panel => {
     const header = panel.querySelector('.panel-header');
@@ -976,6 +987,8 @@ function setupCollapsiblePanels() {
       if (willOpen) {
         panel.classList.remove('collapsed');
       }
+
+      updateExpandedState();
     };
 
     header.addEventListener('click', toggle);

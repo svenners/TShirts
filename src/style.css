@@ -218,6 +218,7 @@ body {
   overflow: hidden;
   padding: 20px;
   user-select: none;
+  transition: min-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Floating Controls (Zoom) */
@@ -341,7 +342,9 @@ body {
   overflow: hidden;
   background-color: #1a1e28;
   transform-origin: center center;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Stage Layers */
@@ -2079,7 +2082,12 @@ input[type="range"]::-webkit-slider-thumb:hover {
     overflow-y: auto;
   }
   .stage-viewport {
-    min-height: 480px;
+    min-height: 440px;
+    padding: 16px;
+  }
+  .stage-container {
+    width: min(100%, 420px);
+    max-height: calc(100vh - 160px);
   }
   .studio-sidebar {
     height: auto;
@@ -2088,5 +2096,44 @@ input[type="range"]::-webkit-slider-thumb:hover {
   }
   .header-specs {
     display: none;
+  }
+
+  /* When expanding a section in mobile, halve the model image size to allow more of the expanded section to be shown */
+  body.has-expanded-panel .stage-viewport {
+    min-height: 220px;
+    padding: 10px 14px;
+  }
+  body.has-expanded-panel .stage-container {
+    width: min(50%, 210px);
+    max-height: 220px;
+  }
+  body.has-expanded-panel .stage-artwork-tools {
+    transform: scale(0.85);
+    transform-origin: top center;
+    top: 8px;
+  }
+  body.has-expanded-panel .stage-floating-controls {
+    transform: scale(0.85);
+    transform-origin: bottom left;
+    bottom: 8px;
+    left: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stage-viewport {
+    min-height: 380px;
+    padding: 12px;
+  }
+  .stage-container {
+    width: min(100%, 340px);
+  }
+  body.has-expanded-panel .stage-viewport {
+    min-height: 190px;
+    padding: 8px;
+  }
+  body.has-expanded-panel .stage-container {
+    width: min(50%, 170px);
+    max-height: 185px;
   }
 }
