@@ -932,15 +932,30 @@ function setupPrintZoneResizing() {
   });
 }
 
-// --- Collapsible Panels on Sidebar ---
+// --- Collapsible Panels on Sidebar (Accordion: starts collapsed, opening one closes others) ---
 
 function setupCollapsiblePanels() {
-  document.querySelectorAll('.panel-card').forEach(panel => {
+  const panels = document.querySelectorAll('.panel-card');
+
+  // Ensure all sidebar panels start collapsed by default
+  panels.forEach(panel => {
+    panel.classList.add('collapsed');
+  });
+
+  panels.forEach(panel => {
     const header = panel.querySelector('.panel-header');
     if (!header) return;
 
     const toggle = () => {
-      panel.classList.toggle('collapsed');
+      const willOpen = panel.classList.contains('collapsed');
+
+      // Accordion behavior: collapse all panels
+      panels.forEach(p => p.classList.add('collapsed'));
+
+      // If the clicked panel was collapsed, expand it
+      if (willOpen) {
+        panel.classList.remove('collapsed');
+      }
     };
 
     header.addEventListener('click', toggle);

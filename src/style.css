@@ -674,6 +674,11 @@ body {
   padding-bottom: 16px;
 }
 
+.panel-card.collapsed:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  background-color: var(--bg-card-hover);
+}
+
 .panel-card.collapsed .panel-content {
   display: none;
 }
