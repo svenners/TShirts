@@ -241,6 +241,7 @@ export const MODELS_CONFIG = {
 
 export const COLOR_SWATCHES = [
   // Classics
+  { name: 'Pitch Black', hex: '#000000', isDark: true, category: 'classics' },
   { name: 'Crisp White', hex: '#FFFFFF', isDark: false, category: 'classics' },
   { name: 'Obsidian Black', hex: '#18181B', isDark: true, category: 'classics' },
   { name: 'Heather Slate', hex: '#475569', isDark: true, category: 'classics' },

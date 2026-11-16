@@ -185,7 +185,63 @@ function getLoadedMask(src) {
 
 // Category filter state & recent colors history
 let activeColorCategory = 'all';
-let recentColors = ['#FFFFFF', '#18181B', '#475569', '#1E293B', '#15803D', '#1D4ED8'];
+let recentColors = ['#000000', '#FFFFFF', '#18181B', '#475569', '#1E293B', '#15803D', '#1D4ED8'];
+
+const NAMED_COLORS = {
+  black: '#000000',
+  white: '#FFFFFF',
+  navy: '#1E293B',
+  slate: '#475569',
+  gray: '#6B7280',
+  grey: '#6B7280',
+  charcoal: '#27272A',
+  red: '#B91C1C',
+  green: '#15803D',
+  blue: '#1D4ED8',
+  yellow: '#FACC15',
+  orange: '#EA580C',
+  purple: '#7C3AED',
+  pink: '#FDA4AF',
+  brown: '#78350F',
+};
+
+function hexToRgb(hex) {
+  let c = hex.replace('#', '');
+  if (c.length === 3) {
+    c = c.split('').map(x => x + x).join('');
+  }
+  const num = parseInt(c, 16);
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255
+  };
+}
+
+function hexToHsl(hex) {
+  let { r, g, b } = hexToRgb(hex);
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return {
+    h: Math.round(h * 360),
+    s: Math.round(s * 100),
+    l: Math.round(l * 100)
+  };
+}
 
 function hslToHex(h, s, l) {
   l /= 100;
@@ -403,7 +459,7 @@ function applySkinToneFilter() {
 
 // --- Rock-Solid Garment Color Compositor (Guarantees 0% bleed) ---
 
-function setShirtColor(hex, name = '') {
+function setShirtColor(hex, name = '', syncSliders = true) {
   state.shirtColor = hex;
   elements.nativeColorInput.value = hex;
   elements.hexInput.value = hex.replace('#', '').toUpperCase();
@@ -412,12 +468,22 @@ function setShirtColor(hex, name = '') {
 
   const foundSwatch = COLOR_SWATCHES.find(s => s.hex.toLowerCase() === hex.toLowerCase());
   const colorName = name || (foundSwatch ? foundSwatch.name : 'Custom');
-  elements.headerColorLabel.textContent = colorName;
+  elements.headerColorLabel.textContent = `${colorName} (${hex.toUpperCase()})`;
   elements.specSummaryColor.textContent = `${hex.toUpperCase()} (${colorName})`;
 
   document.querySelectorAll('.swatch-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.hex.toLowerCase() === hex.toLowerCase());
   });
+
+  if (syncSliders) {
+    try {
+      const hsl = hexToHsl(hex);
+      if (elements.sliderHue) elements.sliderHue.value = hsl.h;
+      if (elements.hueValText) elements.hueValText.textContent = `${hsl.h}°`;
+      if (elements.sliderLightness) elements.sliderLightness.value = hsl.l;
+      if (elements.lightnessValText) elements.lightnessValText.textContent = `${hsl.l}%`;
+    } catch (e) {}
+  }
 
   applyGarmentColor();
 }
@@ -429,11 +495,11 @@ async function applyGarmentColor() {
 
   const isWhite = state.shirtColor.toUpperCase() === '#FFFFFF';
   
-  // Calculate sheen for dark garments
+  // Calculate subtle sheen for dark garments (gentle sheen so black is rich and deep)
   const lum = getLuminance(state.shirtColor);
   let sheen = 0;
   if (lum < 0.35) {
-    sheen = (1.0 - lum) * 0.45;
+    sheen = (1.0 - lum) * 0.12;
   }
   elements.stageContainer.style.setProperty('--sheen-opacity', sheen);
 
@@ -1028,8 +1094,9 @@ function attachEventListeners() {
       const l = parseInt(elements.sliderLightness.value, 10);
       if (elements.hueValText) elements.hueValText.textContent = `${h}°`;
       if (elements.lightnessValText) elements.lightnessValText.textContent = `${l}%`;
-      const hex = hslToHex(h, 95, l);
-      setShirtColor(hex, `Hue ${h}°`);
+      const hex = l === 0 ? '#000000' : (l === 100 ? '#FFFFFF' : hslToHex(h, 95, l));
+      const label = l === 0 ? 'Pitch Black' : (l === 100 ? 'Pure White' : `Tone ${l}%`);
+      setShirtColor(hex, label, false);
       if (commitRecent) {
         addRecentColor(hex);
       }
@@ -1049,21 +1116,30 @@ function attachEventListeners() {
     addRecentColor(e.target.value);
   });
 
-  elements.hexInput.addEventListener('input', (e) => {
-    let val = e.target.value.trim().replace('#', '');
-    if (/^[0-9A-Fa-f]{6}$/.test(val)) {
-      setShirtColor(`#${val}`);
-    } else if (/^[0-9A-Fa-f]{3}$/.test(val)) {
-      setShirtColor(`#${val[0]}${val[0]}${val[1]}${val[1]}${val[2]}${val[2]}`);
-    }
-  });
+  const handleHexOrNameInput = (commit = false) => {
+    let raw = elements.hexInput.value.trim().toLowerCase();
+    if (!raw) return;
 
-  elements.hexInput.addEventListener('change', (e) => {
-    let val = e.target.value.trim().replace('#', '');
-    if (/^[0-9A-Fa-f]{6}$/.test(val)) {
-      addRecentColor(`#${val}`);
+    let targetHex = null;
+    if (NAMED_COLORS[raw]) {
+      targetHex = NAMED_COLORS[raw];
+    } else {
+      let clean = raw.replace('#', '');
+      if (/^[0-9a-f]{6}$/i.test(clean)) {
+        targetHex = `#${clean.toUpperCase()}`;
+      } else if (/^[0-9a-f]{3}$/i.test(clean)) {
+        targetHex = `#${clean[0]}${clean[0]}${clean[1]}${clean[1]}${clean[2]}${clean[2]}`.toUpperCase();
+      }
     }
-  });
+
+    if (targetHex) {
+      setShirtColor(targetHex);
+      if (commit) addRecentColor(targetHex);
+    }
+  };
+
+  elements.hexInput.addEventListener('input', () => handleHexOrNameInput(false));
+  elements.hexInput.addEventListener('change', () => handleHexOrNameInput(true));
 
   if (window.EyeDropper) {
     elements.btnEyedropper.addEventListener('click', async () => {

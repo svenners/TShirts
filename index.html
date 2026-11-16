@@ -353,7 +353,7 @@
                       <span>Brightness & Tone</span>
                       <span class="slider-val-mini" id="lightnessValText">100%</span>
                     </div>
-                    <input type="range" id="sliderLightness" class="lightness-range" min="10" max="100" value="100" />
+                    <input type="range" id="sliderLightness" class="lightness-range" min="0" max="100" value="100" title="Slide left to 0% for Pitch Black" />
                   </div>
 
                   <!-- Custom Hex, Native Color Picker & Eyedropper -->
@@ -363,7 +363,7 @@
                     </div>
                     <div class="hex-input-group">
                       <span class="hex-prefix">#</span>
-                      <input type="text" id="hexInput" value="FFFFFF" maxlength="6" spellcheck="false" placeholder="FFFFFF" />
+                      <input type="text" id="hexInput" value="FFFFFF" maxlength="10" spellcheck="false" placeholder="000000 or black" title="Enter Hex (e.g. 000000) or color name (e.g. black)" />
                     </div>
                     <button class="btn-eyedropper" id="btnEyedropper" title="Pick color from screen">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 11l-8-8-8.5 8.5a2.12 2.12 0 000 3l3.5 3.5a2.12 2.12 0 003 0L17.5 9.5"/><path d="M13 5l4 4M2 22l3-1 7-7-2-2-7 7-1 3z"/></svg>

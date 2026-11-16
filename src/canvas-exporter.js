@@ -99,12 +99,12 @@ export async function renderMockupCanvas({
     ctx.drawImage(colorCanvas, 0, 0, canvasWidth, canvasHeight);
     ctx.restore();
 
-    // If dark garment, add subtle sheen/highlights back
+    // If dark garment, add subtle sheen/highlights back (subtle so black stays deep and rich)
     const lum = getLuminance(shirtColorHex);
     if (lum < 0.35) {
       ctx.save();
       ctx.globalCompositeOperation = 'screen';
-      ctx.globalAlpha = (1.0 - lum) * 0.35;
+      ctx.globalAlpha = (1.0 - lum) * 0.10;
       ctx.drawImage(shadowsImg, 0, 0, canvasWidth, canvasHeight);
       ctx.restore();
     }

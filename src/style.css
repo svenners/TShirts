@@ -389,7 +389,7 @@ body {
   z-index: 13;
   mix-blend-mode: screen;
   opacity: var(--sheen-opacity);
-  filter: contrast(1.4) brightness(1.15);
+  filter: contrast(1.1) brightness(1.0);
   pointer-events: none;
 }
 
