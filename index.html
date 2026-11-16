@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atelier T-Shirt Lab — Custom Apparel Studio & 3D Mockup Builder</title>
+    <meta name="description" content="Design, customize, and model your custom t-shirts on male and female human figures. Supports GIFs, JPEGs, and WebP artwork with configurable colors and neck styles." />
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app" class="app-layout">
+      <!-- Studio Header -->
+      <header class="studio-header">
+        <div class="brand-group">
+          <div class="brand-symbol">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10a2 2 0 002 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z" />
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="brand-title">ATELIER</span>
+            <span class="brand-sub">T-SHIRT STUDIO &bull; LAB</span>
+          </div>
+        </div>
+
+        <!-- Active Spec Pills in Header -->
+        <div class="header-specs">
+          <div class="spec-pill" id="specModelPill">
+            <span class="pill-dot"></span>
+            <span id="headerModelLabel">Male Model</span>
+          </div>
+          <div class="spec-pill" id="specStylePill">
+            <span id="headerStyleLabel">Round Neck</span>
+          </div>
+          <div class="spec-pill color-pill" id="specColorPill">
+            <span class="color-dot" id="headerColorDot" style="background-color: #FFFFFF;"></span>
+            <span id="headerColorLabel">Crisp White</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="action-btn toggle-btn active" id="btnToggleGuide" title="Toggle Printable Boundary Guide">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 3" />
+              <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+            </svg>
+            <span>Print Zone</span>
+          </button>
+          <button class="action-btn" id="btnExportMockup" title="Download High-Resolution Photorealistic Mockup">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+            </svg>
+            <span>Export PNG</span>
+          </button>
+          <button class="action-btn secondary" id="btnExportSpec" title="Download Tech Pack JSON">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" />
+            </svg>
+            <span>Tech Pack</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Stage and Sidebar Grid -->
+      <main class="studio-body">
+        <!-- Interactive Mockup Stage -->
+        <section class="stage-viewport" id="stageViewport">
+          <!-- Zoom / Pan Controller -->
+          <div class="stage-floating-controls">
+            <button class="float-btn" id="btnZoomIn" title="Zoom In">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            </button>
+            <span class="zoom-level" id="zoomLevelText">100%</span>
+            <button class="float-btn" id="btnZoomOut" title="Zoom Out">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            </button>
+            <button class="float-btn" id="btnZoomReset" title="Reset Fit View">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            </button>
+          </div>
+
+          <!-- Quick Artwork Positioning Floating Pill -->
+          <div class="stage-artwork-tools" id="stageArtworkTools">
+            <span class="tools-label">Artwork:</span>
+            <button class="tool-chip" id="btnToolCenterX" title="Center Horizontally">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="3" x2="12" y2="21"/><path d="M18 12H6M9 9l-3 3 3 3M15 9l3 3-3 3"/></svg>
+              <span>Center X</span>
+            </button>
+            <button class="tool-chip" id="btnToolCenterY" title="Center Vertically">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 6v12M9 9l3-3 3 3M9 15l3 3 3-3"/></svg>
+              <span>Center Y</span>
+            </button>
+            <button class="tool-chip" id="btnToolFitChest" title="Scale to Fit Printable Chest">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg>
+              <span>Fit Chest</span>
+            </button>
+            <button class="tool-chip danger" id="btnToolRemove" title="Remove Graphic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span>Remove</span>
+            </button>
+          </div>
+
+          <!-- The Stage Canvas / Garment Container -->
+          <div class="stage-container" id="stageContainer">
+            <!-- 1. Base Model Photo -->
+            <img id="modelBaseImg" class="stage-layer model-base" alt="Human Model" src="/assets/models/male_crew.jpg" />
+
+            <!-- 2. Garment Color Tint Layer (Masked to Garment Alpha) -->
+            <div id="garmentColorLayer" class="stage-layer garment-color-layer"></div>
+
+            <!-- 3. Fabric Highlight Sheen Layer (for deep black/dark colors) -->
+            <img id="garmentHighlightsImg" class="stage-layer garment-highlights-layer" alt="Fabric Sheen" src="/assets/models/male_crew_shadows.png" />
+
+            <!-- 4. Printable Area Container -->
+            <div id="printAreaContainer" class="print-area-container">
+              <!-- Printable Zone Guide (dashed outline & dimension badge) -->
+              <div id="printZoneGuide" class="print-zone-guide">
+                <span class="guide-badge" id="guideBadge">Chest Zone &bull; 12" × 16"</span>
+              </div>
+
+              <!-- Graphic Drag & Transform Wrapper -->
+              <div id="graphicTransformWrapper" class="graphic-transform-wrapper">
+                <img id="userGraphicImg" class="user-graphic-element" alt="Custom Graphic" />
+                
+                <!-- On-screen Direct Manipulation Handles -->
+                <div id="graphicSelectionBox" class="graphic-selection-box">
+                  <div class="handle rotate-handle" id="handleRotate" title="Drag to Rotate">↻</div>
+                  <div class="handle resize-handle nw" data-dir="nw"></div>
+                  <div class="handle resize-handle ne" data-dir="ne"></div>
+                  <div class="handle resize-handle sw" data-dir="sw"></div>
+                  <div class="handle resize-handle se" data-dir="se"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Fabric Wrinkles & Creases Shadow Overlay (Over the artwork for photorealism) -->
+            <img id="garmentShadowsImg" class="stage-layer garment-shadows-layer" alt="Fabric Creases" src="/assets/models/male_crew_shadows.png" />
+
+            <!-- Loading Spinner Overlay -->
+            <div id="stageLoadingOverlay" class="stage-loading-overlay hidden">
+              <div class="spinner"></div>
+              <span>Rendering Studio Lighting...</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Configuration Sidebar -->
+        <aside class="studio-sidebar">
+          <div class="sidebar-scroll">
+
+            <!-- Section 1: Human Model & Garment Style -->
+            <section class="panel-card">
+              <div class="panel-header">
+                <span class="step-num">01</span>
+                <div>
+                  <h2 class="panel-title">Model & Style</h2>
+                  <p class="panel-desc">Select human figure and neckline silhouette</p>
+                </div>
+              </div>
+
+              <!-- Gender Switcher -->
+              <div class="control-group">
+                <label class="control-label">Human Model</label>
+                <div class="segmented-control" id="genderSelector">
+                  <button class="seg-btn active" data-gender="male">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0113 0v2"/></svg>
+                    <span>Male Model</span>
+                  </button>
+                  <button class="seg-btn" data-gender="female">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0112 0v2"/><path d="M12 11v4M10 13h4"/></svg>
+                    <span>Female Model</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Garment Style Switcher -->
+              <div class="control-group">
+                <label class="control-label">Garment Style</label>
+                <div class="style-cards-grid" id="styleSelector">
+                  <!-- Round Neck -->
+                  <button class="style-card active" data-style="crew">
+                    <div class="style-card-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10a2 2 0 002 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/>
+                        <path d="M8 2a4 4 0 008 0"/>
+                      </svg>
+                    </div>
+                    <div class="style-card-content">
+                      <span class="style-name">Round Neck</span>
+                      <span class="style-sub">Classic Crewneck</span>
+                    </div>
+                  </button>
+
+                  <!-- V-Neck -->
+                  <button class="style-card" data-style="vneck">
+                    <div class="style-card-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10a2 2 0 002 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/>
+                        <path d="M8.5 2.5L12 7l3.5-4.5"/>
+                      </svg>
+                    </div>
+                    <div class="style-card-content">
+                      <span class="style-name">V-Neck</span>
+                      <span class="style-sub">Modern Deep V</span>
+                    </div>
+                  </button>
+
+                  <!-- Vest Top -->
+                  <button class="style-card" data-style="vest">
+                    <div class="style-card-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M18 2h-3a3 3 0 01-6 0H6a2 2 0 00-2 2v4a5 5 0 005 5v7a2 2 0 002 2h6a2 2 0 002-2v-7a5 5 0 005-5V4a2 2 0 00-2-2z"/>
+                      </svg>
+                    </div>
+                    <div class="style-card-content">
+                      <span class="style-name">Vest Top</span>
+                      <span class="style-sub">Sleeveless Tank</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 2: Garment Color -->
+            <section class="panel-card">
+              <div class="panel-header">
+                <span class="step-num">02</span>
+                <div>
+                  <h2 class="panel-title">Garment Color</h2>
+                  <p class="panel-desc">Choose from studio swatches or custom hex</p>
+                </div>
+              </div>
+
+              <!-- Color Swatches Grid -->
+              <div class="swatches-grid" id="colorSwatchesGrid"></div>
+
+              <!-- Custom Color Picker Row -->
+              <div class="custom-color-row">
+                <div class="color-preview-box" id="colorPreviewBox" style="background-color: #FFFFFF;">
+                  <input type="color" id="nativeColorInput" value="#FFFFFF" title="Choose Custom Color" />
+                </div>
+                <div class="hex-input-group">
+                  <span class="hex-prefix">#</span>
+                  <input type="text" id="hexInput" value="FFFFFF" maxlength="6" spellcheck="false" />
+                </div>
+                <button class="btn-eyedropper" id="btnEyedropper" title="Pick color from screen">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 11l-8-8-8.5 8.5a2.12 2.12 0 000 3l3.5 3.5a2.12 2.12 0 003 0L17.5 9.5"/><path d="M13 5l4 4M2 22l3-1 7-7-2-2-7 7-1 3z"/></svg>
+                </button>
+              </div>
+
+              <!-- Fabric Texture / Finish -->
+              <div class="fabric-finish-row">
+                <span class="finish-label">Fabric Finish</span>
+                <div class="finish-pills" id="finishPills">
+                  <button class="finish-pill active" data-finish="cotton">100% Combed Cotton</button>
+                  <button class="finish-pill" data-finish="vintage">Vintage Wash</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 3: Artwork & Upload -->
+            <section class="panel-card">
+              <div class="panel-header">
+                <span class="step-num">03</span>
+                <div>
+                  <h2 class="panel-title">Upload Graphic</h2>
+                  <p class="panel-desc">GIFs (static or animated!), JPEGs, WebP & PNG</p>
+                </div>
+              </div>
+
+              <!-- File Dropzone -->
+              <div class="dropzone" id="dropzone">
+                <input type="file" id="fileInput" accept=".gif,image/gif,.jpg,.jpeg,image/jpeg,.webp,image/webp,.png,image/png,.svg,image/svg+xml" />
+                <div class="dropzone-content">
+                  <div class="dropzone-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                    </svg>
+                  </div>
+                  <p class="dropzone-title">Drop your artwork here or <span class="highlight">browse</span></p>
+                  <div class="format-badges">
+                    <span class="fmt-tag highlight-tag">GIF (Animated)</span>
+                    <span class="fmt-tag">JPEG</span>
+                    <span class="fmt-tag">WEBP</span>
+                    <span class="fmt-tag">PNG</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Active Graphic Metadata Card -->
+              <div class="graphic-meta-card hidden" id="graphicMetaCard">
+                <div class="meta-thumb-container">
+                  <img id="metaThumbImg" src="" alt="Thumbnail" />
+                  <span class="meta-anim-badge hidden" id="metaAnimBadge">ANIMATED</span>
+                </div>
+                <div class="meta-info">
+                  <span class="meta-name" id="metaFileName">artwork.png</span>
+                  <div class="meta-stats">
+                    <span id="metaDimensions">500 × 500 px</span> &bull; 
+                    <span id="metaFileSize">42 KB</span> &bull;
+                    <span class="meta-type" id="metaFileType">PNG</span>
+                  </div>
+                </div>
+                <button class="meta-remove-btn" id="btnRemoveArtwork" title="Clear artwork">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+
+              <!-- Sample Gallery -->
+              <div class="sample-art-section">
+                <label class="control-label">Or try sample studio artwork</label>
+                <div class="sample-grid" id="sampleArtGrid"></div>
+              </div>
+            </section>
+
+            <!-- Section 4: Print Placement & Styling -->
+            <section class="panel-card" id="placementPanel">
+              <div class="panel-header">
+                <span class="step-num">04</span>
+                <div>
+                  <h2 class="panel-title">Placement & Print</h2>
+                  <p class="panel-desc">Position, scale, rotation and ink blending</p>
+                </div>
+              </div>
+
+              <!-- Preset Positions -->
+              <div class="control-group">
+                <label class="control-label">Position Presets</label>
+                <div class="presets-row">
+                  <button class="preset-chip active" data-preset="center">Center Chest</button>
+                  <button class="preset-chip" data-preset="pocket">Pocket Crest</button>
+                  <button class="preset-chip" data-preset="large">Streetwear Large</button>
+                  <button class="preset-chip" data-preset="minimal">Collar Micro</button>
+                </div>
+              </div>
+
+              <!-- Transform Sliders -->
+              <div class="sliders-stack">
+                <!-- Scale / Size -->
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <span>Scale / Size</span>
+                    <span class="slider-val" id="scaleValueText">100%</span>
+                  </div>
+                  <input type="range" id="sliderScale" min="15" max="220" value="100" />
+                </div>
+
+                <!-- Rotation -->
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <span>Rotation</span>
+                    <span class="slider-val" id="rotateValueText">0°</span>
+                  </div>
+                  <input type="range" id="sliderRotate" min="-180" max="180" value="0" />
+                </div>
+
+                <!-- Horizontal Offset -->
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <span>Horizontal Offset (X)</span>
+                    <span class="slider-val" id="offsetXValueText">0 px</span>
+                  </div>
+                  <input type="range" id="sliderOffsetX" min="-150" max="150" value="0" />
+                </div>
+
+                <!-- Vertical Offset -->
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <span>Vertical Offset (Y)</span>
+                    <span class="slider-val" id="offsetYValueText">0 px</span>
+                  </div>
+                  <input type="range" id="sliderOffsetY" min="-150" max="150" value="0" />
+                </div>
+
+                <!-- Opacity -->
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <span>Print Opacity</span>
+                    <span class="slider-val" id="opacityValueText">100%</span>
+                  </div>
+                  <input type="range" id="sliderOpacity" min="40" max="100" value="100" />
+                </div>
+              </div>
+
+              <!-- Transform Quick Buttons (Flip H, Flip V, Center) -->
+              <div class="transform-actions-row">
+                <button class="chip-btn" id="btnFlipH" title="Flip Horizontal">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M20 18l-6-6 6-6M4 6l6 6-6 6"/></svg>
+                  <span>Flip H</span>
+                </button>
+                <button class="chip-btn" id="btnFlipV" title="Flip Vertical">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M18 20l-6-6-6 6M6 4l6 6 6-6"/></svg>
+                  <span>Flip V</span>
+                </button>
+                <button class="chip-btn" id="btnResetTransform" title="Reset Position & Rotation">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                  <span>Reset</span>
+                </button>
+              </div>
+
+              <!-- Print Ink Blend Mode -->
+              <div class="control-group">
+                <label class="control-label">Print Method & Blending</label>
+                <div class="blend-selector" id="blendSelector">
+                  <button class="blend-card active" data-blend="multiply">
+                    <div class="blend-title">Screenprint / DTG</div>
+                    <div class="blend-sub">Organic ink absorption into fabric folds</div>
+                  </button>
+                  <button class="blend-card" data-blend="normal">
+                    <div class="blend-title">Vibrant Decal / DTF</div>
+                    <div class="blend-sub">Opaque film with subtle surface shine</div>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 5: Specification Summary & Export -->
+            <section class="panel-card export-card">
+              <div class="panel-header">
+                <span class="step-num">05</span>
+                <div>
+                  <h2 class="panel-title">Production Summary</h2>
+                  <p class="panel-desc">Ready for high-res rendering or production specs</p>
+                </div>
+              </div>
+
+              <div class="spec-table">
+                <div class="spec-row">
+                  <span class="spec-key">Garment</span>
+                  <span class="spec-value" id="specSummaryGarment">Male Model &bull; Round Neck</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-key">Color Hex</span>
+                  <span class="spec-value code-font" id="specSummaryColor">#FFFFFF (Crisp White)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-key">Artwork</span>
+                  <span class="spec-value" id="specSummaryArt">North Peak (PNG)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-key">Print Zone</span>
+                  <span class="spec-value" id="specSummaryZone">Chest Center &bull; 12" × 16"</span>
+                </div>
+              </div>
+
+              <div class="export-actions">
+                <button class="btn-primary-export" id="btnBottomExport">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                  </svg>
+                  <span>Download High-Res Mockup (PNG)</span>
+                </button>
+                <button class="btn-secondary-export" id="btnBottomSpec">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                  </svg>
+                  <span>Export Tech Pack (.JSON)</span>
+                </button>
+              </div>
+            </section>
+
+          </div>
+        </aside>
+      </main>
+
+      <!-- Toast Notification Alert -->
+      <div id="toastNotification" class="toast hidden">
+        <span class="toast-icon">✓</span>
+        <span class="toast-text" id="toastMessage">Mockup downloaded successfully!</span>
+      </div>
+    </div>
+
+    <!-- Main Module Script -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
