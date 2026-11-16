@@ -138,11 +138,12 @@ export async function renderMockupCanvas({
 
     // Blend mode and opacity
     ctx.globalAlpha = graphicState.opacity;
-    if (graphicState.blendMode === 'multiply') {
-      ctx.globalCompositeOperation = 'multiply';
-    } else {
-      ctx.globalCompositeOperation = 'source-over';
-    }
+    const lum = getLuminance(shirtColorHex);
+    // On dark garments (lum < 0.25), realistic apparel printing (DTG / DTF / screenprint) requires
+    // an opaque white underbase, matching the DOM preview ('mix-blend-mode: normal' / 'source-over').
+    // Multiplying artwork into dark fabric results in artwork * 0 = 0 (blacking out the graphic).
+    const effectiveBlendMode = (graphicState.blendMode === 'multiply' && lum >= 0.25) ? 'multiply' : 'source-over';
+    ctx.globalCompositeOperation = effectiveBlendMode;
 
     // Draw centered
     ctx.drawImage(
@@ -155,14 +156,12 @@ export async function renderMockupCanvas({
 
     ctx.restore();
 
-    // 5. Subtle fabric shadow draping (only in realistic screenprint mode, at balanced gentle opacity)
-    if (graphicState.blendMode === 'multiply') {
-      ctx.save();
-      ctx.globalCompositeOperation = 'multiply';
-      ctx.globalAlpha = 0.22; // Gentle, crisp photorealism without muddying artwork
-      ctx.drawImage(shadowsImg, 0, 0, canvasWidth, canvasHeight);
-      ctx.restore();
-    }
+    // 5. Subtle fabric shadow draping (gentle creases over the garment and artwork for photorealism)
+    ctx.save();
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.globalAlpha = effectiveBlendMode === 'multiply' ? 0.22 : 0.15;
+    ctx.drawImage(shadowsImg, 0, 0, canvasWidth, canvasHeight);
+    ctx.restore();
   }
 
   return canvas;
