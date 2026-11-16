@@ -14,8 +14,11 @@ const state = {
   shirtColor: '#FFFFFF',
   fabricFinish: 'cotton', // 'cotton' or 'vintage'
   zoom: 1.0,
-  showGuide: true,
+  showGuide: false, // Print zone is NOT shown by default
   
+  // Custom print area overrides (percentage)
+  printArea: null,
+
   // Artwork state
   graphic: {
     src: null,
@@ -26,11 +29,11 @@ const state = {
     isAnimated: false,
   },
 
-  // Transform state
+  // Transform state relative to model chest center
   transform: {
     scale: 1.0,
     rotation: 0,
-    offsetX: 0, // px from print area center
+    offsetX: 0, // px from model chest center
     offsetY: 0,
     flipH: false,
     flipV: false,
@@ -47,6 +50,7 @@ const elements = {
   headerColorLabel: document.getElementById('headerColorLabel'),
   headerColorDot: document.getElementById('headerColorDot'),
   btnToggleGuide: document.getElementById('btnToggleGuide'),
+  guideBtnText: document.getElementById('guideBtnText'),
   btnExportMockup: document.getElementById('btnExportMockup'),
   btnExportSpec: document.getElementById('btnExportSpec'),
 
@@ -55,7 +59,7 @@ const elements = {
   stageContainer: document.getElementById('stageContainer'),
   modelBaseImg: document.getElementById('modelBaseImg'),
   shirtBaseImg: document.getElementById('shirtBaseImg'),
-  garmentColorLayer: document.getElementById('garmentColorLayer'),
+  garmentColorCanvas: document.getElementById('garmentColorCanvas'),
   garmentHighlightsImg: document.getElementById('garmentHighlightsImg'),
   garmentShadowsImg: document.getElementById('garmentShadowsImg'),
   printAreaContainer: document.getElementById('printAreaContainer'),
@@ -146,6 +150,25 @@ const elements = {
   toastMessage: document.getElementById('toastMessage'),
 };
 
+// Mask Image cache for instantaneous canvas rendering
+const maskImageCache = new Map();
+
+function getLoadedMask(src) {
+  if (maskImageCache.has(src)) {
+    return Promise.resolve(maskImageCache.get(src));
+  }
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      maskImageCache.set(src, img);
+      resolve(img);
+    };
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
 // --- Initialization ---
 function init() {
   renderSkinToneSwatches();
@@ -153,6 +176,7 @@ function init() {
   renderSampleArtworks();
   attachEventListeners();
   setupDirectManipulation();
+  setupPrintZoneResizing();
   
   // Set default model and load default artwork
   updateModelAndStyle();
@@ -225,25 +249,15 @@ function getCurrentModelConfig() {
 function updateModelAndStyle() {
   const modelConfig = getCurrentModelConfig();
   
-  // Preload and switch layers
+  // Base layers
   elements.modelBaseImg.src = modelConfig.baseImage;
   elements.shirtBaseImg.src = modelConfig.shirtImage;
   elements.garmentHighlightsImg.src = modelConfig.shadowsImage;
   elements.garmentShadowsImg.src = modelConfig.shadowsImage;
 
-  // Mask for garment coloring
-  const maskUrl = `url('${modelConfig.maskImage}')`;
-  elements.garmentColorLayer.style.maskImage = maskUrl;
-  elements.garmentColorLayer.style.webkitMaskImage = maskUrl;
-
-  // Update print area calibration
-  const { left, top, width, height, maxInches } = modelConfig.printArea;
-  elements.stageContainer.style.setProperty('--print-left', `${left}%`);
-  elements.stageContainer.style.setProperty('--print-top', `${top}%`);
-  elements.stageContainer.style.setProperty('--print-width', `${width}%`);
-  elements.stageContainer.style.setProperty('--print-height', `${height}%`);
-
-  elements.guideBadge.textContent = `Print Zone • ${maxInches}`;
+  // Initialize or reset print area calibration to model chest
+  state.printArea = { ...modelConfig.printArea };
+  applyPrintAreaCoordinates();
 
   // Update headers and summary
   const genderLabel = MODELS_CONFIG[state.gender].label;
@@ -255,12 +269,23 @@ function updateModelAndStyle() {
   elements.headerStyleLabel.textContent = styleLabel;
   elements.specSummaryGarment.textContent = `${genderLabel} • ${ethData ? ethData.label : 'Fair / Caucasian'}`;
   elements.specSummaryStyle.textContent = styleLabel;
-  elements.specSummaryZone.textContent = `Chest Center • ${maxInches}`;
 
-  // Re-apply skin tone and garment color
   applySkinToneFilter();
   applyGarmentColor();
   updateGraphicDOM();
+}
+
+function applyPrintAreaCoordinates() {
+  if (!state.printArea) return;
+  const { left, top, width, height, maxInches } = state.printArea;
+  elements.stageContainer.style.setProperty('--print-left', `${left}%`);
+  elements.stageContainer.style.setProperty('--print-top', `${top}%`);
+  elements.stageContainer.style.setProperty('--print-width', `${width}%`);
+  elements.stageContainer.style.setProperty('--print-height', `${height}%`);
+
+  const inchesStr = maxInches || `${(width / 3).toFixed(1)}" × ${(height / 2.2).toFixed(1)}"`;
+  elements.guideBadge.textContent = `Print Zone • ${inchesStr}`;
+  elements.specSummaryZone.textContent = `Chest Center • ${inchesStr}`;
 }
 
 function setSkinTonePreset(presetId) {
@@ -273,7 +298,6 @@ function setSkinTonePreset(presetId) {
     btn.classList.toggle('active', btn.dataset.id === presetId);
   });
 
-  // Reset fine-tune sliders when preset is picked
   state.skinDepth = 0;
   state.skinWarmth = 0;
   elements.sliderSkinDepth.value = 0;
@@ -288,14 +312,12 @@ function calculateCurrentSkinFilter() {
   const preset = SKIN_TONE_PRESETS.find(p => p.id === state.skinTone) || SKIN_TONE_PRESETS[0];
   let filterStr = preset.filter === 'none' ? '' : preset.filter;
 
-  // Add depth (brightness & contrast adjustment)
   if (state.skinDepth !== 0) {
     const b = 1.0 + (state.skinDepth / 100);
     const c = 1.0 + (state.skinDepth < 0 ? -state.skinDepth / 250 : state.skinDepth / 200);
     filterStr += ` brightness(${b.toFixed(2)}) contrast(${c.toFixed(2)})`;
   }
 
-  // Add warmth (sepia & hue-rotate)
   if (state.skinWarmth > 0) {
     const s = (state.skinWarmth / 100) * 0.4;
     const h = -(state.skinWarmth * 0.5);
@@ -313,7 +335,7 @@ function applySkinToneFilter() {
   elements.stageContainer.style.setProperty('--model-skin-filter', filter);
 }
 
-// --- Garment Color & Texture ---
+// --- Rock-Solid Garment Color Compositor (Guarantees 0% bleed) ---
 
 function setShirtColor(hex, name = '') {
   state.shirtColor = hex;
@@ -334,9 +356,14 @@ function setShirtColor(hex, name = '') {
   applyGarmentColor();
 }
 
-function applyGarmentColor() {
-  elements.stageContainer.style.setProperty('--shirt-color', state.shirtColor);
+async function applyGarmentColor() {
+  const canvas = elements.garmentColorCanvas;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  const isWhite = state.shirtColor.toUpperCase() === '#FFFFFF';
+  
+  // Calculate sheen for dark garments
   const lum = getLuminance(state.shirtColor);
   let sheen = 0;
   if (lum < 0.35) {
@@ -344,6 +371,24 @@ function applyGarmentColor() {
   }
   elements.stageContainer.style.setProperty('--sheen-opacity', sheen);
 
+  // If colored, render chosen color STRICTLY inside shirt silhouette
+  if (!isWhite) {
+    const modelConfig = getCurrentModelConfig();
+    try {
+      const maskImg = await getLoadedMask(modelConfig.maskImage);
+      // Draw mask with alpha channel
+      ctx.drawImage(maskImg, 0, 0, canvas.width, canvas.height);
+      // Retain only shirt shape and fill with chosen color
+      ctx.globalCompositeOperation = 'source-in';
+      ctx.fillStyle = state.shirtColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.globalCompositeOperation = 'source-over';
+    } catch (err) {
+      console.error('Error drawing shirt color canvas:', err);
+    }
+  }
+
+  // Adjust graphic ink blend mode on very dark shirts
   if (state.transform.blendMode === 'multiply') {
     if (lum < 0.25) {
       elements.userGraphicImg.style.mixBlendMode = 'normal';
@@ -436,6 +481,7 @@ function setGraphic({ src, filename, type, dimensions, sizeText, isAnimated }) {
   elements.userGraphicImg.style.width = `${baseW}px`;
   elements.userGraphicImg.style.height = `${baseH}px`;
 
+  // Reset transforms strictly centered on model chest
   state.transform.offsetX = 0;
   state.transform.offsetY = 0;
   state.transform.rotation = 0;
@@ -456,6 +502,9 @@ function setGraphic({ src, filename, type, dimensions, sizeText, isAnimated }) {
 
   elements.specSummaryArt.textContent = `${filename} (${type})`;
   elements.stageArtworkTools.classList.remove('hidden');
+
+  // Graphic corner resize handles are always visible around the graphic
+  elements.graphicSelectionBox.classList.remove('hidden');
 }
 
 function clearArtwork() {
@@ -470,11 +519,12 @@ function clearArtwork() {
   elements.userGraphicImg.src = '';
   elements.graphicMetaCard.classList.add('hidden');
   elements.stageArtworkTools.classList.add('hidden');
+  elements.graphicSelectionBox.classList.add('hidden');
   elements.specSummaryArt.textContent = 'None';
   document.querySelectorAll('.sample-card').forEach(c => c.classList.remove('active'));
 }
 
-// --- Placement & Transform Controls ---
+// --- Placement & Transform Controls (Aligned to Model Chest) ---
 
 function updateGraphicDOM() {
   if (!state.graphic.src) {
@@ -488,6 +538,7 @@ function updateGraphicDOM() {
   const scaleX = flipH ? -scale : scale;
   const scaleY = flipV ? -scale : scale;
 
+  // Left: 50%, Top: 50% on wrapper centers on model chest; translate(-50%, -50%) centers graphic anchor
   elements.graphicTransformWrapper.style.transform = `
     translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))
     rotate(${rotation}deg)
@@ -555,7 +606,7 @@ function applyPresetPlacement(preset) {
   updateGraphicDOM();
 }
 
-// --- Direct Manipulation ---
+// --- Direct Graphic Manipulation (Drag to move, Corner drag to resize, Handle to rotate) ---
 
 function setupDirectManipulation() {
   let isDragging = false;
@@ -573,6 +624,7 @@ function setupDirectManipulation() {
 
   const wrapper = elements.graphicTransformWrapper;
 
+  // Move graphic
   wrapper.addEventListener('pointerdown', (e) => {
     if (e.target.classList.contains('handle')) return;
 
@@ -587,6 +639,7 @@ function setupDirectManipulation() {
     initialOffsetY = state.transform.offsetY;
   });
 
+  // Rotate handle
   elements.handleRotate.addEventListener('pointerdown', (e) => {
     e.stopPropagation();
     e.preventDefault();
@@ -601,7 +654,8 @@ function setupDirectManipulation() {
     initialRotation = state.transform.rotation - (currentAngleRad * 180 / Math.PI);
   });
 
-  document.querySelectorAll('.resize-handle').forEach(handle => {
+  // Corner resize handles
+  elements.graphicSelectionBox.querySelectorAll('.resize-handle').forEach(handle => {
     handle.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
       e.preventDefault();
@@ -654,6 +708,80 @@ function setupDirectManipulation() {
     }
     if (isRotating) isRotating = false;
     if (isResizing) isResizing = false;
+  });
+}
+
+// --- Interactive Print Zone Resizing ---
+
+function setupPrintZoneResizing() {
+  let isResizingPZ = false;
+  let activeDir = null;
+  let startX = 0, startY = 0;
+  let initialLeft = 0, initialTop = 0, initialWidth = 0, initialHeight = 0;
+
+  elements.printZoneGuide.querySelectorAll('.pz-handle').forEach(handle => {
+    handle.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      isResizingPZ = true;
+      activeDir = handle.dataset.pzdir;
+      handle.setPointerCapture(e.pointerId);
+
+      startX = e.clientX;
+      startY = e.clientY;
+      initialLeft = state.printArea.left;
+      initialTop = state.printArea.top;
+      initialWidth = state.printArea.width;
+      initialHeight = state.printArea.height;
+    });
+  });
+
+  window.addEventListener('pointermove', (e) => {
+    if (!isResizingPZ) return;
+    const stageRect = elements.stageContainer.getBoundingClientRect();
+    const dLeftPct = ((e.clientX - startX) / (stageRect.width * state.zoom)) * 100;
+    const dTopPct = ((e.clientY - startY) / (stageRect.height * state.zoom)) * 100;
+
+    let newL = initialLeft;
+    let newT = initialTop;
+    let newW = initialWidth;
+    let newH = initialHeight;
+
+    if (activeDir.includes('e')) {
+      newW = Math.max(15, Math.min(60, initialWidth + dLeftPct));
+    }
+    if (activeDir.includes('s') || activeDir === 'b') {
+      newH = Math.max(15, Math.min(60, initialHeight + dTopPct));
+    }
+    if (activeDir.includes('w') || activeDir === 'l') {
+      const allowedDW = Math.max(-initialLeft, Math.min(initialWidth - 15, dLeftPct));
+      newL = initialLeft + allowedDW;
+      newW = initialWidth - allowedDW;
+    }
+    if (activeDir.includes('n') || activeDir === 't') {
+      const allowedDH = Math.max(-initialTop, Math.min(initialHeight - 15, dTopPct));
+      newT = initialTop + allowedDH;
+      newH = initialHeight - allowedDH;
+    }
+
+    state.printArea.left = Number(newL.toFixed(1));
+    state.printArea.top = Number(newT.toFixed(1));
+    state.printArea.width = Number(newW.toFixed(1));
+    state.printArea.height = Number(newH.toFixed(1));
+
+    // Dynamic inches calculation
+    const inchesW = ((state.printArea.width / 36) * 12).toFixed(1);
+    const inchesH = ((state.printArea.height / 35) * 16).toFixed(1);
+    state.printArea.maxInches = `${inchesW}" × ${inchesH}"`;
+
+    applyPrintAreaCoordinates();
+  });
+
+  window.addEventListener('pointerup', () => {
+    if (isResizingPZ) {
+      isResizingPZ = false;
+      showToast(`Print Zone resized: ${state.printArea.maxInches}`);
+    }
   });
 }
 
@@ -857,25 +985,28 @@ function attachEventListeners() {
     });
   });
 
-  // Quick Artwork Floating Tools
+  // Quick Artwork Floating Tools (Strictly Centered on Model Chest)
   elements.btnToolCenterX.addEventListener('click', () => {
     state.transform.offsetX = 0;
     syncTransformSliders();
     updateGraphicDOM();
+    showToast('Centered horizontally on model chest');
   });
 
   elements.btnToolCenterY.addEventListener('click', () => {
     state.transform.offsetY = 0;
     syncTransformSliders();
     updateGraphicDOM();
+    showToast('Centered vertically on model chest');
   });
 
   elements.btnToolFitChest.addEventListener('click', () => {
     state.transform.offsetX = 0;
     state.transform.offsetY = 0;
-    state.transform.scale = 1.35;
+    state.transform.scale = 1.25;
     syncTransformSliders();
     updateGraphicDOM();
+    showToast('Fitted to model printable chest');
   });
 
   // Toggle Printable Guide
@@ -883,7 +1014,7 @@ function attachEventListeners() {
     state.showGuide = !state.showGuide;
     elements.btnToggleGuide.classList.toggle('active', state.showGuide);
     elements.printZoneGuide.classList.toggle('hidden', !state.showGuide);
-    elements.graphicSelectionBox.classList.toggle('hidden', !state.showGuide);
+    elements.guideBtnText.textContent = state.showGuide ? 'Hide Print Zone' : 'Show Print Zone';
   });
 
   // Zoom Controls
@@ -957,7 +1088,7 @@ function attachEventListeners() {
         style: modelConfig.label,
         fabricColorHex: state.shirtColor,
         fabricFinish: state.fabricFinish,
-        printableZone: modelConfig.printArea.maxInches,
+        printableZone: state.printArea ? state.printArea.maxInches : modelConfig.printArea.maxInches,
       },
       artwork: {
         uploaded: Boolean(state.graphic.src),

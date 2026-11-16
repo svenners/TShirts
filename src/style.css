@@ -269,7 +269,7 @@ body {
   text-align: center;
 }
 
-/* Floating Artwork Positioning Tools */
+/* Floating Artwork Positioning Tools (Aligned to Model Chest) */
 .stage-artwork-tools {
   position: absolute;
   top: 24px;
@@ -362,22 +362,18 @@ body {
   transition: filter 0.15s ease-out;
 }
 
-/* Pure white shirt cutout underlay: isolates garment from model skin filter */
+/* Pure white shirt cutout underlay: isolates garment fabric from skin filter */
 .shirt-base-cutout {
   z-index: 11;
   display: block;
   pointer-events: none;
 }
 
-.garment-color-layer {
+/* Garment Color Canvas: Renders selected color strictly inside shirt silhouette */
+.garment-color-canvas {
   z-index: 12;
-  background-color: var(--shirt-color);
-  mask-size: 100% 100%;
-  -webkit-mask-size: 100% 100%;
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
   mix-blend-mode: multiply;
-  transition: background-color 0.12s ease-out;
+  pointer-events: none;
 }
 
 .garment-highlights-layer {
@@ -388,7 +384,7 @@ body {
   pointer-events: none;
 }
 
-/* Printable Area */
+/* Printable Area Container: Calibrated strictly to the Model's Chest */
 .print-area-container {
   position: absolute;
   left: var(--print-left, 32%);
@@ -397,46 +393,69 @@ body {
   height: var(--print-height, 35%);
   z-index: 20;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-/* Printable Guide (Dashed Box) */
+/* Printable Guide (Dashed Box with interactive resize handles) */
 .print-zone-guide {
   position: absolute;
   inset: 0;
-  border: 1.5px dashed rgba(59, 130, 246, 0.6);
+  border: 2px dashed rgba(59, 130, 246, 0.85);
   border-radius: 6px;
-  background-color: rgba(59, 130, 246, 0.04);
-  pointer-events: none;
+  background-color: rgba(59, 130, 246, 0.08);
+  pointer-events: auto;
+  cursor: move;
   opacity: 1;
   transition: opacity 0.2s ease;
 }
 
 .print-zone-guide.hidden {
-  opacity: 0;
+  display: none;
 }
 
 .guide-badge {
   position: absolute;
-  bottom: -22px;
+  bottom: -24px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(15, 23, 42, 0.85);
+  background-color: rgba(15, 23, 42, 0.9);
   backdrop-filter: blur(4px);
   color: #93c5fd;
-  border: 1px solid rgba(59, 130, 246, 0.4);
+  border: 1px solid rgba(59, 130, 246, 0.5);
   border-radius: 4px;
   font-family: var(--font-mono);
-  font-size: 9px;
-  padding: 1px 6px;
+  font-size: 10px;
+  padding: 2px 8px;
   white-space: nowrap;
+  pointer-events: none;
 }
 
-/* Graphic Transform Wrapper */
+/* Print Zone Resize Handles */
+.pz-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #3b82f6;
+  border: 1.5px solid #ffffff;
+  border-radius: 2px;
+  pointer-events: auto;
+  z-index: 22;
+}
+
+.pz-handle.pz-nw { top: -5px; left: -5px; cursor: nwse-resize; }
+.pz-handle.pz-ne { top: -5px; right: -5px; cursor: nesw-resize; }
+.pz-handle.pz-sw { bottom: -5px; left: -5px; cursor: nesw-resize; }
+.pz-handle.pz-se { bottom: -5px; right: -5px; cursor: nwse-resize; }
+.pz-handle.pz-t { top: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.pz-handle.pz-b { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.pz-handle.pz-l { left: -5px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+.pz-handle.pz-r { right: -5px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+
+/* Graphic Transform Wrapper (Centered strictly on Model Chest Center) */
 .graphic-transform-wrapper {
   position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center center;
   pointer-events: auto;
   cursor: grab;
   user-select: none;
@@ -458,43 +477,43 @@ body {
   object-fit: contain;
 }
 
-/* Selection Box and Handles */
+/* Selection Box and Corner Drag Handles around the Artwork */
 .graphic-selection-box {
   position: absolute;
   inset: -6px;
   border: 1.5px solid var(--accent-primary);
   border-radius: 4px;
   pointer-events: none;
-  opacity: 1;
-  transition: opacity 0.15s ease;
+  display: block;
 }
 
 .graphic-selection-box.hidden {
-  opacity: 0;
+  display: none;
 }
 
 .handle {
   position: absolute;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   background-color: #ffffff;
   border: 2px solid var(--accent-primary);
   border-radius: 50%;
   pointer-events: auto;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  z-index: 24;
 }
 
-.handle.nw { top: -6px; left: -6px; cursor: nwse-resize; }
-.handle.ne { top: -6px; right: -6px; cursor: nesw-resize; }
-.handle.sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
-.handle.se { bottom: -6px; right: -6px; cursor: nwse-resize; }
+.handle.nw { top: -7px; left: -7px; cursor: nwse-resize; }
+.handle.ne { top: -7px; right: -7px; cursor: nesw-resize; }
+.handle.sw { bottom: -7px; left: -7px; cursor: nesw-resize; }
+.handle.se { bottom: -7px; right: -7px; cursor: nwse-resize; }
 
 .rotate-handle {
   top: -28px;
   left: 50%;
   transform: translateX(-50%);
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background-color: var(--accent-primary);
   color: #fff;
@@ -509,7 +528,7 @@ body {
 .rotate-handle::after {
   content: '';
   position: absolute;
-  top: 18px;
+  top: 20px;
   left: 50%;
   width: 1px;
   height: 9px;
