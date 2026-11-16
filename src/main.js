@@ -99,12 +99,18 @@ const elements = {
   // Sidebar: Style
   styleSelector: document.getElementById('styleSelector'),
 
-  // Sidebar: Color
+  // Sidebar: Flexible Color
+  colorCategoryTabs: document.getElementById('colorCategoryTabs'),
   colorSwatchesGrid: document.getElementById('colorSwatchesGrid'),
+  sliderHue: document.getElementById('sliderHue'),
+  hueValText: document.getElementById('hueValText'),
+  sliderLightness: document.getElementById('sliderLightness'),
+  lightnessValText: document.getElementById('lightnessValText'),
   nativeColorInput: document.getElementById('nativeColorInput'),
   colorPreviewBox: document.getElementById('colorPreviewBox'),
   hexInput: document.getElementById('hexInput'),
   btnEyedropper: document.getElementById('btnEyedropper'),
+  recentSwatchesList: document.getElementById('recentSwatchesList'),
   finishPills: document.getElementById('finishPills'),
 
   // Sidebar: Artwork & Upload
@@ -147,6 +153,12 @@ const elements = {
   btnBottomExport: document.getElementById('btnBottomExport'),
   btnBottomSpec: document.getElementById('btnBottomSpec'),
 
+  // Advanced Settings Modal
+  advancedModal: document.getElementById('advancedModal'),
+  btnOpenAdvancedModal: document.getElementById('btnOpenAdvancedModal'),
+  btnCloseAdvancedModal: document.getElementById('btnCloseAdvancedModal'),
+  btnModalDone: document.getElementById('btnModalDone'),
+
   // Toast
   toastNotification: document.getElementById('toastNotification'),
   toastMessage: document.getElementById('toastMessage'),
@@ -171,18 +183,57 @@ function getLoadedMask(src) {
   });
 }
 
+// Category filter state & recent colors history
+let activeColorCategory = 'all';
+let recentColors = ['#FFFFFF', '#18181B', '#475569', '#1E293B', '#15803D', '#1D4ED8'];
+
+function hslToHex(h, s, l) {
+  l /= 100;
+  const a = (s * Math.min(l, 1 - l)) / 100;
+  const f = n => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+}
+
+function addRecentColor(hex) {
+  if (!hex) return;
+  hex = hex.toUpperCase();
+  recentColors = [hex, ...recentColors.filter(c => c !== hex)].slice(0, 8);
+  renderRecentColors();
+}
+
+function renderRecentColors() {
+  if (!elements.recentSwatchesList) return;
+  elements.recentSwatchesList.innerHTML = '';
+  recentColors.forEach(hex => {
+    const swatch = document.createElement('div');
+    swatch.className = 'recent-swatch';
+    swatch.style.backgroundColor = hex;
+    swatch.title = hex;
+    swatch.addEventListener('click', () => {
+      setShirtColor(hex, `Custom ${hex}`);
+    });
+    elements.recentSwatchesList.appendChild(swatch);
+  });
+}
+
 // --- Initialization ---
 function init() {
   renderSkinToneSwatches();
   renderColorSwatches();
-  renderSampleArtworks();
+  renderRecentColors();
   attachEventListeners();
   setupDirectManipulation();
   setupPrintZoneResizing();
+  setupCollapsiblePanels();
+  setupAdvancedModal();
   
-  // Set default model and load default artwork
+  // Set default model figure (clean state: no sample artwork pre-loaded)
   updateModelAndStyle();
-  loadSampleArtwork(SAMPLE_GRAPHICS[0]); // Load North Peak default
+  clearArtwork();
 }
 
 // --- Render Helpers ---
@@ -202,9 +253,15 @@ function renderSkinToneSwatches() {
   });
 }
 
-function renderColorSwatches() {
+function renderColorSwatches(category = activeColorCategory) {
+  if (!elements.colorSwatchesGrid) return;
   elements.colorSwatchesGrid.innerHTML = '';
-  COLOR_SWATCHES.forEach(swatch => {
+  
+  const filtered = category === 'all'
+    ? COLOR_SWATCHES
+    : COLOR_SWATCHES.filter(s => s.category === category);
+
+  filtered.forEach(swatch => {
     const btn = document.createElement('button');
     btn.className = `swatch-btn ${swatch.hex.toUpperCase() === state.shirtColor.toUpperCase() ? 'active' : ''}`;
     btn.style.backgroundColor = swatch.hex;
@@ -718,6 +775,21 @@ function setupDirectManipulation() {
     if (isRotating) isRotating = false;
     if (isResizing) isResizing = false;
   });
+
+  // When clicking outside of the image (unless on corner/rotate handles), hide the sizing framework;
+  // clicking inside the image restores it so mockup can be viewed cleanly.
+  elements.stageViewport.addEventListener('pointerdown', (e) => {
+    if (!state.graphic.src) return;
+
+    const clickedWrapper = elements.graphicTransformWrapper.contains(e.target);
+    const clickedHandle = e.target.classList.contains('handle') || e.target.closest('.handle');
+
+    if (clickedWrapper || clickedHandle) {
+      elements.graphicSelectionBox.classList.remove('hidden');
+    } else {
+      elements.graphicSelectionBox.classList.add('hidden');
+    }
+  });
 }
 
 // --- Interactive Print Zone Resizing ---
@@ -794,6 +866,91 @@ function setupPrintZoneResizing() {
   });
 }
 
+// --- Collapsible Panels on Sidebar ---
+
+function setupCollapsiblePanels() {
+  document.querySelectorAll('.panel-card').forEach(panel => {
+    const header = panel.querySelector('.panel-header');
+    if (!header) return;
+
+    const toggle = () => {
+      panel.classList.toggle('collapsed');
+    };
+
+    header.addEventListener('click', toggle);
+    header.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle();
+      }
+    });
+  });
+}
+
+// --- Advanced Settings & Tech Pack Modal ---
+
+function setupAdvancedModal() {
+  const openModal = () => {
+    if (elements.advancedModal) {
+      elements.advancedModal.classList.remove('hidden');
+    }
+  };
+  const closeModal = () => {
+    if (elements.advancedModal) {
+      elements.advancedModal.classList.add('hidden');
+    }
+  };
+
+  if (elements.btnOpenAdvancedModal) {
+    elements.btnOpenAdvancedModal.addEventListener('click', openModal);
+  }
+  if (elements.btnExportSpec) {
+    elements.btnExportSpec.addEventListener('click', openModal);
+  }
+  if (elements.btnCloseAdvancedModal) {
+    elements.btnCloseAdvancedModal.addEventListener('click', closeModal);
+  }
+  if (elements.btnModalDone) {
+    elements.btnModalDone.addEventListener('click', closeModal);
+  }
+
+  if (elements.advancedModal) {
+    elements.advancedModal.addEventListener('click', (e) => {
+      if (e.target === elements.advancedModal) closeModal();
+    });
+  }
+
+  // Fabric finish pills in modal
+  if (elements.finishPills) {
+    elements.finishPills.querySelectorAll('.finish-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        elements.finishPills.querySelectorAll('.finish-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        state.fabricFinish = pill.dataset.finish;
+        if (state.fabricFinish === 'heather') {
+          elements.garmentShadowsImg.style.opacity = '0.70';
+          elements.garmentShadowsImg.style.filter = 'contrast(1.15)';
+        } else {
+          elements.garmentShadowsImg.style.opacity = '0.58';
+          elements.garmentShadowsImg.style.filter = 'none';
+        }
+      });
+    });
+  }
+
+  // Blend selector in modal
+  if (elements.blendSelector) {
+    elements.blendSelector.querySelectorAll('.blend-card').forEach(card => {
+      card.addEventListener('click', () => {
+        elements.blendSelector.querySelectorAll('.blend-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        state.transform.blendMode = card.dataset.method === 'screenprint' ? 'multiply' : 'normal';
+        updateGraphicDOM();
+      });
+    });
+  }
+}
+
 // --- Event Listeners ---
 
 function attachEventListeners() {
@@ -852,17 +1009,59 @@ function attachEventListeners() {
     });
   });
 
-  // Custom Color Picker & Inputs
+  // Flexible Color Category Tabs
+  if (elements.colorCategoryTabs) {
+    elements.colorCategoryTabs.querySelectorAll('.color-cat-btn').forEach(tab => {
+      tab.addEventListener('click', () => {
+        elements.colorCategoryTabs.querySelectorAll('.color-cat-btn').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeColorCategory = tab.dataset.cat;
+        renderColorSwatches(activeColorCategory);
+      });
+    });
+  }
+
+  // Hue & Lightness Spectrum Sliders
+  if (elements.sliderHue && elements.sliderLightness) {
+    const handleSliderColorChange = (commitRecent = false) => {
+      const h = parseInt(elements.sliderHue.value, 10);
+      const l = parseInt(elements.sliderLightness.value, 10);
+      if (elements.hueValText) elements.hueValText.textContent = `${h}°`;
+      if (elements.lightnessValText) elements.lightnessValText.textContent = `${l}%`;
+      const hex = hslToHex(h, 95, l);
+      setShirtColor(hex, `Hue ${h}°`);
+      if (commitRecent) {
+        addRecentColor(hex);
+      }
+    };
+
+    elements.sliderHue.addEventListener('input', () => handleSliderColorChange(false));
+    elements.sliderHue.addEventListener('change', () => handleSliderColorChange(true));
+    elements.sliderLightness.addEventListener('input', () => handleSliderColorChange(false));
+    elements.sliderLightness.addEventListener('change', () => handleSliderColorChange(true));
+  }
+
+  // Custom Color Picker & Hex Input
   elements.nativeColorInput.addEventListener('input', (e) => {
     setShirtColor(e.target.value);
   });
+  elements.nativeColorInput.addEventListener('change', (e) => {
+    addRecentColor(e.target.value);
+  });
 
-  elements.hexInput.addEventListener('change', (e) => {
+  elements.hexInput.addEventListener('input', (e) => {
     let val = e.target.value.trim().replace('#', '');
     if (/^[0-9A-Fa-f]{6}$/.test(val)) {
       setShirtColor(`#${val}`);
     } else if (/^[0-9A-Fa-f]{3}$/.test(val)) {
       setShirtColor(`#${val[0]}${val[0]}${val[1]}${val[1]}${val[2]}${val[2]}`);
+    }
+  });
+
+  elements.hexInput.addEventListener('change', (e) => {
+    let val = e.target.value.trim().replace('#', '');
+    if (/^[0-9A-Fa-f]{6}$/.test(val)) {
+      addRecentColor(`#${val}`);
     }
   });
 
@@ -873,6 +1072,7 @@ function attachEventListeners() {
         const res = await dropper.open();
         if (res && res.sRGBHex) {
           setShirtColor(res.sRGBHex);
+          addRecentColor(res.sRGBHex);
         }
       } catch (e) {
         // user canceled
@@ -881,22 +1081,6 @@ function attachEventListeners() {
   } else {
     elements.btnEyedropper.style.display = 'none';
   }
-
-  // Fabric finish pills
-  elements.finishPills.querySelectorAll('.finish-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      elements.finishPills.querySelectorAll('.finish-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      state.fabricFinish = pill.dataset.finish;
-      if (state.fabricFinish === 'vintage') {
-        elements.garmentShadowsImg.style.opacity = '0.75';
-        elements.garmentShadowsImg.style.filter = 'contrast(1.2)';
-      } else {
-        elements.garmentShadowsImg.style.opacity = '0.58';
-        elements.garmentShadowsImg.style.filter = 'none';
-      }
-    });
-  });
 
   // Dropzone
   elements.dropzone.addEventListener('dragover', (e) => {
@@ -984,16 +1168,6 @@ function attachEventListeners() {
     applyPresetPlacement('center');
   });
 
-  // Blend Mode
-  elements.blendSelector.querySelectorAll('.blend-card').forEach(card => {
-    card.addEventListener('click', () => {
-      elements.blendSelector.querySelectorAll('.blend-card').forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-      state.transform.blendMode = card.dataset.blend;
-      updateGraphicDOM();
-    });
-  });
-
   // Quick Artwork Floating Tools (Strictly Centered on Model Chest)
   elements.btnToolCenterX.addEventListener('click', () => {
     state.transform.offsetX = 0;
@@ -1031,16 +1205,30 @@ function attachEventListeners() {
   elements.btnZoomOut.addEventListener('click', () => setZoom(state.zoom - 0.15));
   elements.btnZoomReset.addEventListener('click', () => setZoom(1.0));
 
-  // Export Mockup Action
+  // Export Mockup Action with Exact Mathematical Chest Alignment
   const triggerExportPNG = async () => {
     try {
       showLoading(true);
       const modelConfig = getCurrentModelConfig();
-      const stageRect = elements.stageContainer.getBoundingClientRect();
 
-      const graphicRect = elements.graphicTransformWrapper.getBoundingClientRect();
-      const graphicCenterX = graphicRect.left + graphicRect.width / 2 - stageRect.left;
-      const graphicCenterY = graphicRect.top + graphicRect.height / 2 - stageRect.top;
+      // Compute exact mathematical canvas position (896 x 1200 px)
+      // unaffected by DOM rotation handle bounds or CSS scale zoom
+      const stageW = elements.stageContainer.offsetWidth || 560;
+      const stageH = elements.stageContainer.offsetHeight || 750;
+      const pxRatioX = 896 / stageW;
+      const pxRatioY = 1200 / stageH;
+
+      const printCenterX = ((state.printArea.left + state.printArea.width / 2) / 100) * 896;
+      const printCenterY = ((state.printArea.top + state.printArea.height / 2) / 100) * 1200;
+
+      const canvasGraphicX = printCenterX + (state.transform.offsetX * pxRatioX);
+      const canvasGraphicY = printCenterY + (state.transform.offsetY * pxRatioY);
+
+      const graphicBaseW = elements.userGraphicImg.offsetWidth || 200;
+      const graphicBaseH = elements.userGraphicImg.offsetHeight || 200;
+
+      const canvasGraphicW = graphicBaseW * pxRatioX * state.transform.scale;
+      const canvasGraphicH = graphicBaseH * pxRatioY * state.transform.scale;
 
       const filename = `tshirt-${state.gender}-${state.ethnicity}-${state.style}-${state.shirtColor.replace('#', '')}.png`;
 
@@ -1050,10 +1238,10 @@ function attachEventListeners() {
         skinToneFilter: calculateCurrentSkinFilter(),
         graphicImgElement: state.graphic.src ? elements.userGraphicImg : null,
         graphicState: {
-          x: graphicCenterX,
-          y: graphicCenterY,
-          width: elements.userGraphicImg.clientWidth || 200,
-          height: elements.userGraphicImg.clientHeight || 200,
+          canvasCenterX: canvasGraphicX,
+          canvasCenterY: canvasGraphicY,
+          canvasWidth: canvasGraphicW,
+          canvasHeight: canvasGraphicH,
           scale: state.transform.scale,
           rotation: state.transform.rotation,
           flipH: state.transform.flipH,
@@ -1062,8 +1250,8 @@ function attachEventListeners() {
           opacity: state.transform.opacity
         },
         stageDimensions: {
-          width: stageRect.width,
-          height: stageRect.height
+          width: stageW,
+          height: stageH
         }
       }, filename);
 
@@ -1121,8 +1309,9 @@ function attachEventListeners() {
     showToast('Tech Pack JSON exported!');
   };
 
-  elements.btnExportSpec.addEventListener('click', triggerExportSpec);
-  elements.btnBottomSpec.addEventListener('click', triggerExportSpec);
+  if (elements.btnBottomSpec) {
+    elements.btnBottomSpec.addEventListener('click', triggerExportSpec);
+  }
 }
 
 // --- Zoom Controller ---

@@ -168,392 +168,467 @@
           <div class="sidebar-scroll">
 
             <!-- Section 1: Human Model, Race & Skin Colour -->
-            <section class="panel-card">
-              <div class="panel-header">
+            <section class="panel-card" data-section="model">
+              <div class="panel-header" role="button" tabindex="0" title="Click to collapse or expand">
                 <span class="step-num">01</span>
-                <div>
+                <div class="panel-header-text">
                   <h2 class="panel-title">Model Figure & Complexion</h2>
                   <p class="panel-desc">Configure model gender, ethnicity, and skin tone</p>
                 </div>
+                <span class="collapse-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
               </div>
-
-              <!-- Gender Switcher -->
-              <div class="control-group">
-                <label class="control-label">Model Gender</label>
-                <div class="segmented-control" id="genderSelector">
-                  <button class="seg-btn active" data-gender="male">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0113 0v2"/></svg>
-                    <span>Male Model</span>
-                  </button>
-                  <button class="seg-btn" data-gender="female">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0112 0v2"/><path d="M12 11v4M10 13h4"/></svg>
-                    <span>Female Model</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Race / Ethnicity Selector -->
-              <div class="control-group">
-                <label class="control-label">Race / Ethnicity</label>
-                <div class="ethnicity-cards-grid" id="ethnicitySelector">
-                  <button class="eth-card active" data-ethnicity="caucasian">
-                    <div class="eth-badge-row">
-                      <span class="eth-swatch" style="background-color: #E2B89D;"></span>
-                      <span class="eth-name">Fair / Caucasian</span>
-                    </div>
-                    <span class="eth-desc">Light / European</span>
-                  </button>
-                  <button class="eth-card" data-ethnicity="black">
-                    <div class="eth-badge-row">
-                      <span class="eth-swatch" style="background-color: #5D351D;"></span>
-                      <span class="eth-name">Black / African</span>
-                    </div>
-                    <span class="eth-desc">Deep / African</span>
-                  </button>
-                  <button class="eth-card" data-ethnicity="asian">
-                    <div class="eth-badge-row">
-                      <span class="eth-swatch" style="background-color: #DEB58A;"></span>
-                      <span class="eth-name">Asian / East Asian</span>
-                    </div>
-                    <span class="eth-desc">Warm / East Asian</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Model Skin Tone / Colour Presets -->
-              <div class="control-group">
-                <div class="label-with-val">
-                  <label class="control-label">Skin Tone & Complexion</label>
-                  <span class="val-badge" id="activeSkinToneLabel">Natural Studio Tone</span>
-                </div>
-                <div class="skin-tones-grid" id="skinTonesGrid"></div>
-              </div>
-
-              <!-- Fine-tune Skin Tone Sliders -->
-              <div class="skin-sliders-box">
-                <div class="slider-row">
-                  <div class="slider-header">
-                    <span>Complexion Depth</span>
-                    <span class="slider-val" id="skinDepthVal">Default</span>
+              <div class="panel-content">
+                <!-- Gender Switcher -->
+                <div class="control-group">
+                  <label class="control-label">Model Gender</label>
+                  <div class="segmented-control" id="genderSelector">
+                    <button class="seg-btn active" data-gender="male">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0113 0v2"/></svg>
+                      <span>Male Model</span>
+                    </button>
+                    <button class="seg-btn" data-gender="female">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0112 0v2"/><path d="M12 11v4M10 13h4"/></svg>
+                      <span>Female Model</span>
+                    </button>
                   </div>
-                  <input type="range" id="sliderSkinDepth" min="-40" max="40" value="0" />
                 </div>
-                <div class="slider-row">
-                  <div class="slider-header">
-                    <span>Undertone Warmth</span>
-                    <span class="slider-val" id="skinWarmthVal">Neutral</span>
+
+                <!-- Race / Ethnicity Selector -->
+                <div class="control-group">
+                  <label class="control-label">Race / Ethnicity</label>
+                  <div class="ethnicity-cards-grid" id="ethnicitySelector">
+                    <button class="eth-card active" data-ethnicity="caucasian">
+                      <div class="eth-badge-row">
+                        <span class="eth-swatch" style="background-color: #E2B89D;"></span>
+                        <span class="eth-name">Fair / Caucasian</span>
+                      </div>
+                      <span class="eth-desc">Light / European</span>
+                    </button>
+                    <button class="eth-card" data-ethnicity="black">
+                      <div class="eth-badge-row">
+                        <span class="eth-swatch" style="background-color: #5D351D;"></span>
+                        <span class="eth-name">Black / African</span>
+                      </div>
+                      <span class="eth-desc">Deep / African</span>
+                    </button>
+                    <button class="eth-card" data-ethnicity="asian">
+                      <div class="eth-badge-row">
+                        <span class="eth-swatch" style="background-color: #DEB58A;"></span>
+                        <span class="eth-name">Asian / East Asian</span>
+                      </div>
+                      <span class="eth-desc">Warm / East Asian</span>
+                    </button>
                   </div>
-                  <input type="range" id="sliderSkinWarmth" min="-30" max="30" value="0" />
+                </div>
+
+                <!-- Model Skin Tone / Colour Presets -->
+                <div class="control-group">
+                  <div class="label-with-val">
+                    <label class="control-label">Skin Tone & Complexion</label>
+                    <span class="val-badge" id="activeSkinToneLabel">Natural Studio Tone</span>
+                  </div>
+                  <div class="skin-tones-grid" id="skinTonesGrid"></div>
+                </div>
+
+                <!-- Fine-tune Skin Tone Sliders -->
+                <div class="skin-sliders-box">
+                  <div class="slider-row">
+                    <div class="slider-header">
+                      <span>Complexion Depth</span>
+                      <span class="slider-val" id="skinDepthVal">Default</span>
+                    </div>
+                    <input type="range" id="sliderSkinDepth" min="-40" max="40" value="0" />
+                  </div>
+                  <div class="slider-row">
+                    <div class="slider-header">
+                      <span>Undertone Warmth</span>
+                      <span class="slider-val" id="skinWarmthVal">Neutral</span>
+                    </div>
+                    <input type="range" id="sliderSkinWarmth" min="-30" max="30" value="0" />
+                  </div>
                 </div>
               </div>
             </section>
 
             <!-- Section 2: Garment Silhouette & Style -->
-            <section class="panel-card">
-              <div class="panel-header">
+            <section class="panel-card" data-section="style">
+              <div class="panel-header" role="button" tabindex="0" title="Click to collapse or expand">
                 <span class="step-num">02</span>
-                <div>
+                <div class="panel-header-text">
                   <h2 class="panel-title">Garment Style</h2>
                   <p class="panel-desc">Select neckline cut and silhouette</p>
                 </div>
+                <span class="collapse-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
               </div>
+              <div class="panel-content">
+                <!-- Garment Style Switcher -->
+                <div class="control-group">
+                  <div class="style-cards-grid" id="styleSelector">
+                    <!-- Round Neck -->
+                    <button class="style-card active" data-style="crew">
+                      <div class="style-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                          <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10a2 2 0 002 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/>
+                          <path d="M8 2a4 4 0 008 0"/>
+                        </svg>
+                      </div>
+                      <div class="style-card-content">
+                        <span class="style-name">Round Neck</span>
+                        <span class="style-sub">Classic Crewneck</span>
+                      </div>
+                    </button>
 
-              <!-- Garment Style Switcher -->
-              <div class="control-group">
-                <div class="style-cards-grid" id="styleSelector">
-                  <!-- Round Neck -->
-                  <button class="style-card active" data-style="crew">
-                    <div class="style-card-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10a2 2 0 002 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/>
-                        <path d="M8 2a4 4 0 008 0"/>
-                      </svg>
-                    </div>
-                    <div class="style-card-content">
-                      <span class="style-name">Round Neck</span>
-                      <span class="style-sub">Classic Crewneck</span>
-                    </div>
-                  </button>
+                    <!-- V-Neck -->
+                    <button class="style-card" data-style="vneck">
+                      <div class="style-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                          <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10a2 2 0 002 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/>
+                          <path d="M8.5 2.5L12 7l3.5-4.5"/>
+                        </svg>
+                      </div>
+                      <div class="style-card-content">
+                        <span class="style-name">V-Neck</span>
+                        <span class="style-sub">Modern Deep V</span>
+                      </div>
+                    </button>
 
-                  <!-- V-Neck -->
-                  <button class="style-card" data-style="vneck">
-                    <div class="style-card-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10a2 2 0 002 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/>
-                        <path d="M8.5 2.5L12 7l3.5-4.5"/>
-                      </svg>
-                    </div>
-                    <div class="style-card-content">
-                      <span class="style-name">V-Neck</span>
-                      <span class="style-sub">Modern Deep V</span>
-                    </div>
-                  </button>
-
-                  <!-- Vest Top -->
-                  <button class="style-card" data-style="vest">
-                    <div class="style-card-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path d="M18 2h-3a3 3 0 01-6 0H6a2 2 0 00-2 2v4a5 5 0 005 5v7a2 2 0 002 2h6a2 2 0 002-2v-7a5 5 0 005-5V4a2 2 0 00-2-2z"/>
-                      </svg>
-                    </div>
-                    <div class="style-card-content">
-                      <span class="style-name">Vest Top</span>
-                      <span class="style-sub">Sleeveless Tank</span>
-                    </div>
-                  </button>
+                    <!-- Vest Top -->
+                    <button class="style-card" data-style="vest">
+                      <div class="style-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                          <path d="M18 2h-3a3 3 0 01-6 0H6a2 2 0 00-2 2v4a5 5 0 005 5v7a2 2 0 002 2h6a2 2 0 002-2v-7a5 5 0 005-5V4a2 2 0 00-2-2z"/>
+                        </svg>
+                      </div>
+                      <div class="style-card-content">
+                        <span class="style-name">Vest Top</span>
+                        <span class="style-sub">Sleeveless Tank</span>
+                      </div>
+                    </button>
+                  </div>
                 </div>
               </div>
             </section>
 
-            <!-- Section 3: Garment Color -->
-            <section class="panel-card">
-              <div class="panel-header">
+            <!-- Section 3: Flexible Garment Color Picker -->
+            <section class="panel-card" data-section="color">
+              <div class="panel-header" role="button" tabindex="0" title="Click to collapse or expand">
                 <span class="step-num">03</span>
-                <div>
+                <div class="panel-header-text">
                   <h2 class="panel-title">Garment Color</h2>
-                  <p class="panel-desc">Choose from studio swatches or custom hex</p>
+                  <p class="panel-desc">Curated palettes, hue wheel, shade, or hex</p>
                 </div>
+                <span class="collapse-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
               </div>
-
-              <!-- Color Swatches Grid -->
-              <div class="swatches-grid" id="colorSwatchesGrid"></div>
-
-              <!-- Custom Color Picker Row -->
-              <div class="custom-color-row">
-                <div class="color-preview-box" id="colorPreviewBox" style="background-color: #FFFFFF;">
-                  <input type="color" id="nativeColorInput" value="#FFFFFF" title="Choose Custom Color" />
+              <div class="panel-content">
+                <!-- Color Category Tabs -->
+                <div class="color-category-tabs" id="colorCategoryTabs">
+                  <button class="color-cat-btn active" data-cat="all">All</button>
+                  <button class="color-cat-btn" data-cat="classics">Classics</button>
+                  <button class="color-cat-btn" data-cat="earthy">Earthy</button>
+                  <button class="color-cat-btn" data-cat="vibrant">Vibrant</button>
+                  <button class="color-cat-btn" data-cat="pastels">Pastels</button>
                 </div>
-                <div class="hex-input-group">
-                  <span class="hex-prefix">#</span>
-                  <input type="text" id="hexInput" value="FFFFFF" maxlength="6" spellcheck="false" />
-                </div>
-                <button class="btn-eyedropper" id="btnEyedropper" title="Pick color from screen">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 11l-8-8-8.5 8.5a2.12 2.12 0 000 3l3.5 3.5a2.12 2.12 0 003 0L17.5 9.5"/><path d="M13 5l4 4M2 22l3-1 7-7-2-2-7 7-1 3z"/></svg>
-                </button>
-              </div>
 
-              <!-- Fabric Texture / Finish -->
-              <div class="fabric-finish-row">
-                <span class="finish-label">Fabric Finish</span>
-                <div class="finish-pills" id="finishPills">
-                  <button class="finish-pill active" data-finish="cotton">100% Combed Cotton</button>
-                  <button class="finish-pill" data-finish="vintage">Vintage Wash</button>
+                <!-- Color Swatches Grid -->
+                <div class="swatches-grid" id="colorSwatchesGrid"></div>
+
+                <!-- Interactive Hue Spectrum & Shade Sliders -->
+                <div class="flexible-color-box">
+                  <div class="color-slider-row">
+                    <div class="slider-header-mini">
+                      <span>Spectrum Hue</span>
+                      <span class="slider-val-mini" id="hueValText">0°</span>
+                    </div>
+                    <input type="range" id="sliderHue" class="spectrum-range" min="0" max="360" value="0" />
+                  </div>
+
+                  <div class="color-slider-row">
+                    <div class="slider-header-mini">
+                      <span>Brightness & Tone</span>
+                      <span class="slider-val-mini" id="lightnessValText">100%</span>
+                    </div>
+                    <input type="range" id="sliderLightness" class="lightness-range" min="10" max="100" value="100" />
+                  </div>
+
+                  <!-- Custom Hex, Native Color Picker & Eyedropper -->
+                  <div class="custom-color-row">
+                    <div class="color-preview-box" id="colorPreviewBox" style="background-color: #FFFFFF;">
+                      <input type="color" id="nativeColorInput" value="#FFFFFF" title="Open OS Color Picker" />
+                    </div>
+                    <div class="hex-input-group">
+                      <span class="hex-prefix">#</span>
+                      <input type="text" id="hexInput" value="FFFFFF" maxlength="6" spellcheck="false" placeholder="FFFFFF" />
+                    </div>
+                    <button class="btn-eyedropper" id="btnEyedropper" title="Pick color from screen">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 11l-8-8-8.5 8.5a2.12 2.12 0 000 3l3.5 3.5a2.12 2.12 0 003 0L17.5 9.5"/><path d="M13 5l4 4M2 22l3-1 7-7-2-2-7 7-1 3z"/></svg>
+                    </button>
+                  </div>
+
+                  <!-- Recent Colors -->
+                  <div class="recent-colors-row" id="recentColorsRow">
+                    <span class="recent-title">Recent:</span>
+                    <div class="recent-swatches-list" id="recentSwatchesList"></div>
+                  </div>
                 </div>
               </div>
             </section>
 
-            <!-- Section 4: Artwork & Upload -->
-            <section class="panel-card">
-              <div class="panel-header">
+            <!-- Section 4: Artwork & Upload (Clean: No Sample Artwork) -->
+            <section class="panel-card" data-section="artwork">
+              <div class="panel-header" role="button" tabindex="0" title="Click to collapse or expand">
                 <span class="step-num">04</span>
-                <div>
+                <div class="panel-header-text">
                   <h2 class="panel-title">Upload Graphic</h2>
                   <p class="panel-desc">GIFs (static or animated!), JPEGs, WebP & PNG</p>
                 </div>
+                <span class="collapse-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
               </div>
-
-              <!-- File Dropzone -->
-              <div class="dropzone" id="dropzone">
-                <input type="file" id="fileInput" accept=".gif,image/gif,.jpg,.jpeg,image/jpeg,.webp,image/webp,.png,image/png,.svg,image/svg+xml" />
-                <div class="dropzone-content">
-                  <div class="dropzone-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-                    </svg>
-                  </div>
-                  <p class="dropzone-title">Drop your artwork here or <span class="highlight">browse</span></p>
-                  <div class="format-badges">
-                    <span class="fmt-tag highlight-tag">GIF (Animated)</span>
-                    <span class="fmt-tag">JPEG</span>
-                    <span class="fmt-tag">WEBP</span>
-                    <span class="fmt-tag">PNG</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Active Graphic Metadata Card -->
-              <div class="graphic-meta-card hidden" id="graphicMetaCard">
-                <div class="meta-thumb-container">
-                  <img id="metaThumbImg" src="" alt="Thumbnail" />
-                  <span class="meta-anim-badge hidden" id="metaAnimBadge">ANIMATED</span>
-                </div>
-                <div class="meta-info">
-                  <span class="meta-name" id="metaFileName">artwork.png</span>
-                  <div class="meta-stats">
-                    <span id="metaDimensions">500 × 500 px</span> &bull; 
-                    <span id="metaFileSize">42 KB</span> &bull;
-                    <span class="meta-type" id="metaFileType">PNG</span>
+              <div class="panel-content">
+                <!-- File Dropzone -->
+                <div class="dropzone" id="dropzone">
+                  <input type="file" id="fileInput" accept=".gif,image/gif,.jpg,.jpeg,image/jpeg,.webp,image/webp,.png,image/png,.svg,image/svg+xml" />
+                  <div class="dropzone-content">
+                    <div class="dropzone-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                      </svg>
+                    </div>
+                    <p class="dropzone-title">Drop your artwork here or <span class="highlight">browse</span></p>
+                    <div class="format-badges">
+                      <span class="fmt-tag highlight-tag">GIF (Animated)</span>
+                      <span class="fmt-tag">JPEG</span>
+                      <span class="fmt-tag">WEBP</span>
+                      <span class="fmt-tag">PNG</span>
+                    </div>
                   </div>
                 </div>
-                <button class="meta-remove-btn" id="btnRemoveArtwork" title="Clear artwork">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-              </div>
 
-              <!-- Sample Gallery -->
-              <div class="sample-art-section">
-                <label class="control-label">Or try sample studio artwork</label>
-                <div class="sample-grid" id="sampleArtGrid"></div>
+                <!-- Active Graphic Metadata Card -->
+                <div class="graphic-meta-card hidden" id="graphicMetaCard">
+                  <div class="meta-thumb-container">
+                    <img id="metaThumbImg" src="" alt="Thumbnail" />
+                    <span class="meta-anim-badge hidden" id="metaAnimBadge">ANIMATED</span>
+                  </div>
+                  <div class="meta-info">
+                    <span class="meta-name" id="metaFileName">artwork.png</span>
+                    <div class="meta-stats">
+                      <span id="metaDimensions">500 × 500 px</span> &bull; 
+                      <span id="metaFileSize">42 KB</span> &bull;
+                      <span class="meta-type" id="metaFileType">PNG</span>
+                    </div>
+                  </div>
+                  <button class="meta-remove-btn" id="btnRemoveArtwork" title="Clear artwork">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
               </div>
             </section>
 
-            <!-- Section 5: Print Placement & Styling -->
-            <section class="panel-card" id="placementPanel">
-              <div class="panel-header">
+            <!-- Section 5: Print Placement & Scaling -->
+            <section class="panel-card" id="placementPanel" data-section="placement">
+              <div class="panel-header" role="button" tabindex="0" title="Click to collapse or expand">
                 <span class="step-num">05</span>
-                <div>
-                  <h2 class="panel-title">Placement & Print</h2>
-                  <p class="panel-desc">Position, scale, rotation and ink blending</p>
+                <div class="panel-header-text">
+                  <h2 class="panel-title">Placement & Transform</h2>
+                  <p class="panel-desc">Scale, rotation, offsets and alignment</p>
                 </div>
+                <span class="collapse-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
               </div>
-
-              <!-- Preset Positions -->
-              <div class="control-group">
-                <label class="control-label">Position Presets</label>
-                <div class="presets-row">
-                  <button class="preset-chip active" data-preset="center">Center Chest</button>
-                  <button class="preset-chip" data-preset="pocket">Pocket Crest</button>
-                  <button class="preset-chip" data-preset="large">Streetwear Large</button>
-                  <button class="preset-chip" data-preset="minimal">Collar Micro</button>
-                </div>
-              </div>
-
-              <!-- Transform Sliders -->
-              <div class="sliders-stack">
-                <!-- Scale / Size -->
-                <div class="slider-row">
-                  <div class="slider-header">
-                    <span>Scale / Size</span>
-                    <span class="slider-val" id="scaleValueText">100%</span>
+              <div class="panel-content">
+                <!-- Preset Positions -->
+                <div class="control-group">
+                  <label class="control-label">Position Presets</label>
+                  <div class="presets-row">
+                    <button class="preset-chip active" data-preset="center">Center Chest</button>
+                    <button class="preset-chip" data-preset="pocket">Pocket Crest</button>
+                    <button class="preset-chip" data-preset="large">Streetwear Large</button>
+                    <button class="preset-chip" data-preset="minimal">Collar Micro</button>
                   </div>
-                  <input type="range" id="sliderScale" min="15" max="220" value="100" />
                 </div>
 
-                <!-- Rotation -->
-                <div class="slider-row">
-                  <div class="slider-header">
-                    <span>Rotation</span>
-                    <span class="slider-val" id="rotateValueText">0°</span>
+                <!-- Transform Sliders -->
+                <div class="sliders-stack">
+                  <!-- Scale / Size -->
+                  <div class="slider-row">
+                    <div class="slider-header">
+                      <span>Scale / Size</span>
+                      <span class="slider-val" id="scaleValueText">100%</span>
+                    </div>
+                    <input type="range" id="sliderScale" min="15" max="220" value="100" />
                   </div>
-                  <input type="range" id="sliderRotate" min="-180" max="180" value="0" />
-                </div>
 
-                <!-- Horizontal Offset -->
-                <div class="slider-row">
-                  <div class="slider-header">
-                    <span>Horizontal Offset from Chest Center</span>
-                    <span class="slider-val" id="offsetXValueText">0 px</span>
+                  <!-- Rotation -->
+                  <div class="slider-row">
+                    <div class="slider-header">
+                      <span>Rotation</span>
+                      <span class="slider-val" id="rotateValueText">0°</span>
+                    </div>
+                    <input type="range" id="sliderRotate" min="-180" max="180" value="0" />
                   </div>
-                  <input type="range" id="sliderOffsetX" min="-150" max="150" value="0" />
-                </div>
 
-                <!-- Vertical Offset -->
-                <div class="slider-row">
-                  <div class="slider-header">
-                    <span>Vertical Offset from Chest Center</span>
-                    <span class="slider-val" id="offsetYValueText">0 px</span>
+                  <!-- Horizontal Offset -->
+                  <div class="slider-row">
+                    <div class="slider-header">
+                      <span>Horizontal Offset from Chest</span>
+                      <span class="slider-val" id="offsetXValueText">0 px</span>
+                    </div>
+                    <input type="range" id="sliderOffsetX" min="-150" max="150" value="0" />
                   </div>
-                  <input type="range" id="sliderOffsetY" min="-150" max="150" value="0" />
-                </div>
 
-                <!-- Opacity -->
-                <div class="slider-row">
-                  <div class="slider-header">
-                    <span>Print Opacity</span>
-                    <span class="slider-val" id="opacityValueText">100%</span>
+                  <!-- Vertical Offset -->
+                  <div class="slider-row">
+                    <div class="slider-header">
+                      <span>Vertical Offset from Chest</span>
+                      <span class="slider-val" id="offsetYValueText">0 px</span>
+                    </div>
+                    <input type="range" id="sliderOffsetY" min="-150" max="150" value="0" />
                   </div>
-                  <input type="range" id="sliderOpacity" min="40" max="100" value="100" />
+
+                  <!-- Opacity -->
+                  <div class="slider-row">
+                    <div class="slider-header">
+                      <span>Print Opacity</span>
+                      <span class="slider-val" id="opacityValueText">100%</span>
+                    </div>
+                    <input type="range" id="sliderOpacity" min="40" max="100" value="100" />
+                  </div>
                 </div>
-              </div>
 
-              <!-- Transform Quick Buttons (Flip H, Flip V, Center) -->
-              <div class="transform-actions-row">
-                <button class="chip-btn" id="btnFlipH" title="Flip Horizontal">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M20 18l-6-6 6-6M4 6l6 6-6 6"/></svg>
-                  <span>Flip H</span>
-                </button>
-                <button class="chip-btn" id="btnFlipV" title="Flip Vertical">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M18 20l-6-6-6 6M6 4l6 6 6-6"/></svg>
-                  <span>Flip V</span>
-                </button>
-                <button class="chip-btn" id="btnResetTransform" title="Reset Position & Rotation">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                  <span>Reset</span>
-                </button>
-              </div>
-
-              <!-- Print Ink Blend Mode -->
-              <div class="control-group">
-                <label class="control-label">Print Method & Blending</label>
-                <div class="blend-selector" id="blendSelector">
-                  <button class="blend-card active" data-blend="multiply">
-                    <div class="blend-title">Screenprint / DTG</div>
-                    <div class="blend-sub">Organic ink absorption into fabric folds</div>
+                <!-- Transform Quick Buttons (Flip H, Flip V, Reset) -->
+                <div class="transform-actions-row">
+                  <button class="chip-btn" id="btnFlipH" title="Flip Horizontal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M20 18l-6-6 6-6M4 6l6 6-6 6"/></svg>
+                    <span>Flip H</span>
                   </button>
-                  <button class="blend-card" data-blend="normal">
-                    <div class="blend-title">Vibrant Decal / DTF</div>
-                    <div class="blend-sub">Opaque film with subtle surface shine</div>
+                  <button class="chip-btn" id="btnFlipV" title="Flip Vertical">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M18 20l-6-6-6 6M6 4l6 6 6-6"/></svg>
+                    <span>Flip V</span>
+                  </button>
+                  <button class="chip-btn" id="btnResetTransform" title="Reset Position & Rotation">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    <span>Reset</span>
                   </button>
                 </div>
               </div>
             </section>
 
-            <!-- Section 6: Specification Summary & Export -->
-            <section class="panel-card export-card">
-              <div class="panel-header">
-                <span class="step-num">06</span>
-                <div>
-                  <h2 class="panel-title">Production Summary</h2>
-                  <p class="panel-desc">Ready for high-res rendering or production specs</p>
-                </div>
-              </div>
-
-              <div class="spec-table">
-                <div class="spec-row">
-                  <span class="spec-key">Figure & Race</span>
-                  <span class="spec-value" id="specSummaryGarment">Male &bull; Fair / Caucasian</span>
-                </div>
-                <div class="spec-row">
-                  <span class="spec-key">Skin Complexion</span>
-                  <span class="spec-value" id="specSummarySkinTone">Natural Studio Tone</span>
-                </div>
-                <div class="spec-row">
-                  <span class="spec-key">Garment Style</span>
-                  <span class="spec-value" id="specSummaryStyle">Round Neck (Crew)</span>
-                </div>
-                <div class="spec-row">
-                  <span class="spec-key">Garment Color</span>
-                  <span class="spec-value code-font" id="specSummaryColor">#FFFFFF (Crisp White)</span>
-                </div>
-                <div class="spec-row">
-                  <span class="spec-key">Artwork</span>
-                  <span class="spec-value" id="specSummaryArt">North Peak (PNG)</span>
-                </div>
-                <div class="spec-row">
-                  <span class="spec-key">Print Zone</span>
-                  <span class="spec-value" id="specSummaryZone">Chest Center &bull; 12" × 16"</span>
-                </div>
-              </div>
-
-              <div class="export-actions">
-                <button class="btn-primary-export" id="btnBottomExport">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-                  </svg>
-                  <span>Download High-Res Mockup (PNG)</span>
-                </button>
-                <button class="btn-secondary-export" id="btnBottomSpec">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8"/>
-                  </svg>
-                  <span>Export Tech Pack (.JSON)</span>
-                </button>
-              </div>
-            </section>
+            <!-- Sidebar Bottom Action Bar -->
+            <div class="sidebar-footer-bar">
+              <button class="btn-primary-export" id="btnBottomExport">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                </svg>
+                <span>Download High-Res Mockup (PNG)</span>
+              </button>
+              <button class="btn-advanced-trigger" id="btnOpenAdvancedModal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+                </svg>
+                <span>Advanced Settings & Tech Pack</span>
+              </button>
+            </div>
 
           </div>
         </aside>
       </main>
+
+      <!-- Advanced Settings & Tech Pack Modal Dialog -->
+      <div id="advancedModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <div class="modal-header-info">
+              <h2 id="modalTitle" class="modal-title">Advanced Settings & Tech Pack</h2>
+              <p class="modal-subtitle">Fabric finish, print technology specifications, and JSON manufacturing export</p>
+            </div>
+            <button class="modal-close-btn" id="btnCloseAdvancedModal" aria-label="Close dialog">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <!-- Fabric Finish & Texture -->
+            <div class="modal-section">
+              <label class="control-label">Fabric Finish & Texture</label>
+              <div class="finish-pills" id="finishPills">
+                <button class="finish-pill active" data-finish="matte">Matte Combed Cotton</button>
+                <button class="finish-pill" data-finish="heather">Vintage Heather</button>
+                <button class="finish-pill" data-finish="organic">Raw Organic Weave</button>
+              </div>
+            </div>
+
+            <!-- Print Method & Blend Simulation -->
+            <div class="modal-section">
+              <label class="control-label">Print Application Method</label>
+              <div class="blend-cards-grid" id="blendSelector">
+                <button class="blend-card active" data-method="screenprint">
+                  <div class="blend-card-header">
+                    <span class="blend-title">Screenprint / DTG Blend</span>
+                    <span class="blend-badge">Realistic</span>
+                  </div>
+                  <span class="blend-desc">Ink absorbs into garment fabric fibers, blending photorealistically with fabric folds and wrinkles.</span>
+                </button>
+                <button class="blend-card" data-method="dtg">
+                  <div class="blend-card-header">
+                    <span class="blend-title">Vibrant Decal / Heat Press DTF</span>
+                    <span class="blend-badge">Vibrant</span>
+                  </div>
+                  <span class="blend-desc">Solid opaque substrate sitting on top of fabric with vibrant full color pop and crisp contrast.</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Production Specification Summary Table -->
+            <div class="modal-section">
+              <label class="control-label">Production Specification</label>
+              <div class="spec-summary-card">
+                <div class="spec-row">
+                  <span class="spec-label">Model Figure:</span>
+                  <span class="spec-value" id="specSummaryGarment">Male (Fair / Caucasian)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Complexion:</span>
+                  <span class="spec-value" id="specSummarySkinTone">Natural Studio Tone</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Garment Cut:</span>
+                  <span class="spec-value" id="specSummaryStyle">Round Neck Classic</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Garment Color:</span>
+                  <span class="spec-value" id="specSummaryColor">Pure White (#FFFFFF)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Graphic File:</span>
+                  <span class="spec-value" id="specSummaryArt">No graphic uploaded</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Print Zone & Scale:</span>
+                  <span class="spec-value" id="specSummaryZone">Standard Chest (Scale: 100%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-secondary" id="btnBottomSpec">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span>Export Tech Pack (.JSON)</span>
+            </button>
+            <button class="btn-primary" id="btnModalDone">Done</button>
+          </div>
+        </div>
+      </div>
 
       <!-- Toast Notification Alert -->
       <div id="toastNotification" class="toast hidden">

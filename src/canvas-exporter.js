@@ -114,15 +114,22 @@ export async function renderMockupCanvas({
   if (graphicImgElement && graphicImgElement.src) {
     ctx.save();
 
-    // Coordinate mapping from DOM stage to 896x1200 Canvas
-    const scaleX = canvasWidth / stageDimensions.width;
-    const scaleY = canvasHeight / stageDimensions.height;
+    let canvasGraphicX, canvasGraphicY, canvasGraphicW, canvasGraphicH;
 
-    // Convert graphic position (center of graphic in stage coords) to canvas coords
-    const canvasGraphicX = graphicState.x * scaleX;
-    const canvasGraphicY = graphicState.y * scaleY;
-    const canvasGraphicW = graphicState.width * scaleX * graphicState.scale;
-    const canvasGraphicH = graphicState.height * scaleY * graphicState.scale;
+    if (graphicState.canvasCenterX !== undefined) {
+      canvasGraphicX = graphicState.canvasCenterX;
+      canvasGraphicY = graphicState.canvasCenterY;
+      canvasGraphicW = graphicState.canvasWidth;
+      canvasGraphicH = graphicState.canvasHeight;
+    } else {
+      // Coordinate mapping fallback
+      const scaleX = canvasWidth / stageDimensions.width;
+      const scaleY = canvasHeight / stageDimensions.height;
+      canvasGraphicX = graphicState.x * scaleX;
+      canvasGraphicY = graphicState.y * scaleY;
+      canvasGraphicW = graphicState.width * scaleX * graphicState.scale;
+      canvasGraphicH = graphicState.height * scaleY * graphicState.scale;
+    }
 
     // Translate to center of graphic
     ctx.translate(canvasGraphicX, canvasGraphicY);
@@ -148,12 +155,14 @@ export async function renderMockupCanvas({
 
     ctx.restore();
 
-    // 5. Overlap fabric shadows over the graphic for photorealistic fabric crease draping
-    ctx.save();
-    ctx.globalCompositeOperation = 'multiply';
-    ctx.globalAlpha = 0.55;
-    ctx.drawImage(shadowsImg, 0, 0, canvasWidth, canvasHeight);
-    ctx.restore();
+    // 5. Subtle fabric shadow draping (only in realistic screenprint mode, at balanced gentle opacity)
+    if (graphicState.blendMode === 'multiply') {
+      ctx.save();
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.globalAlpha = 0.22; // Gentle, crisp photorealism without muddying artwork
+      ctx.drawImage(shadowsImg, 0, 0, canvasWidth, canvasHeight);
+      ctx.restore();
+    }
   }
 
   return canvas;

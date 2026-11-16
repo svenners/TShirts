@@ -105,22 +105,22 @@ export const MODELS_CONFIG = {
           },
           vneck: {
             label: 'V-Neck',
-            baseImage: '/assets/models/male_asian_crew.jpg',
-            personImage: '/assets/models/male_asian_crew_person.png',
-            bgImage: '/assets/models/male_asian_crew_bg.jpg',
-            shirtImage: '/assets/models/male_asian_crew_shirt.png',
-            maskImage: '/assets/models/male_asian_crew_mask.png',
-            shadowsImage: '/assets/models/male_asian_crew_shadows.png',
+            baseImage: '/assets/models/male_asian_vneck.jpg',
+            personImage: '/assets/models/male_asian_vneck_person.png',
+            bgImage: '/assets/models/male_asian_vneck_bg.jpg',
+            shirtImage: '/assets/models/male_asian_vneck_shirt.png',
+            maskImage: '/assets/models/male_asian_vneck_mask.png',
+            shadowsImage: '/assets/models/male_asian_vneck_shadows.png',
             printArea: { left: 32, top: 38, width: 35, height: 34, maxInches: '12" × 15"' }
           },
           vest: {
             label: 'Vest Top (Tank)',
-            baseImage: '/assets/models/male_asian_crew.jpg',
-            personImage: '/assets/models/male_asian_crew_person.png',
-            bgImage: '/assets/models/male_asian_crew_bg.jpg',
-            shirtImage: '/assets/models/male_asian_crew_shirt.png',
-            maskImage: '/assets/models/male_asian_crew_mask.png',
-            shadowsImage: '/assets/models/male_asian_crew_shadows.png',
+            baseImage: '/assets/models/male_asian_vest.jpg',
+            personImage: '/assets/models/male_asian_vest_person.png',
+            bgImage: '/assets/models/male_asian_vest_bg.jpg',
+            shirtImage: '/assets/models/male_asian_vest_shirt.png',
+            maskImage: '/assets/models/male_asian_vest_mask.png',
+            shadowsImage: '/assets/models/male_asian_vest_shadows.png',
             printArea: { left: 33, top: 38, width: 34, height: 35, maxInches: '11" × 15"' }
           }
         }
@@ -180,12 +180,12 @@ export const MODELS_CONFIG = {
           },
           vneck: {
             label: 'V-Neck',
-            baseImage: '/assets/models/female_black_crew.jpg',
-            personImage: '/assets/models/female_black_crew_person.png',
-            bgImage: '/assets/models/female_black_crew_bg.jpg',
-            shirtImage: '/assets/models/female_black_crew_shirt.png',
-            maskImage: '/assets/models/female_black_crew_mask.png',
-            shadowsImage: '/assets/models/female_black_crew_shadows.png',
+            baseImage: '/assets/models/female_black_vneck.jpg',
+            personImage: '/assets/models/female_black_vneck_person.png',
+            bgImage: '/assets/models/female_black_vneck_bg.jpg',
+            shirtImage: '/assets/models/female_black_vneck_shirt.png',
+            maskImage: '/assets/models/female_black_vneck_mask.png',
+            shadowsImage: '/assets/models/female_black_vneck_shadows.png',
             printArea: { left: 34, top: 41, width: 32, height: 31, maxInches: '11" × 13.5"' }
           },
           vest: {
@@ -215,22 +215,22 @@ export const MODELS_CONFIG = {
           },
           vneck: {
             label: 'V-Neck',
-            baseImage: '/assets/models/female_asian_crew.jpg',
-            personImage: '/assets/models/female_asian_crew_person.png',
-            bgImage: '/assets/models/female_asian_crew_bg.jpg',
-            shirtImage: '/assets/models/female_asian_crew_shirt.png',
-            maskImage: '/assets/models/female_asian_crew_mask.png',
-            shadowsImage: '/assets/models/female_asian_crew_shadows.png',
+            baseImage: '/assets/models/female_asian_vneck.jpg',
+            personImage: '/assets/models/female_asian_vneck_person.png',
+            bgImage: '/assets/models/female_asian_vneck_bg.jpg',
+            shirtImage: '/assets/models/female_asian_vneck_shirt.png',
+            maskImage: '/assets/models/female_asian_vneck_mask.png',
+            shadowsImage: '/assets/models/female_asian_vneck_shadows.png',
             printArea: { left: 34, top: 41, width: 32, height: 31, maxInches: '11" × 13.5"' }
           },
           vest: {
             label: 'Vest Top (Tank)',
-            baseImage: '/assets/models/female_asian_crew.jpg',
-            personImage: '/assets/models/female_asian_crew_person.png',
-            bgImage: '/assets/models/female_asian_crew_bg.jpg',
-            shirtImage: '/assets/models/female_asian_crew_shirt.png',
-            maskImage: '/assets/models/female_asian_crew_mask.png',
-            shadowsImage: '/assets/models/female_asian_crew_shadows.png',
+            baseImage: '/assets/models/female_asian_vest.jpg',
+            personImage: '/assets/models/female_asian_vest_person.png',
+            bgImage: '/assets/models/female_asian_vest_bg.jpg',
+            shirtImage: '/assets/models/female_asian_vest_shirt.png',
+            maskImage: '/assets/models/female_asian_vest_mask.png',
+            shadowsImage: '/assets/models/female_asian_vest_shadows.png',
             printArea: { left: 34.5, top: 41, width: 31, height: 32, maxInches: '10.5" × 14"' }
           }
         }
@@ -240,18 +240,37 @@ export const MODELS_CONFIG = {
 };
 
 export const COLOR_SWATCHES = [
-  { name: 'Crisp White', hex: '#FFFFFF', isDark: false },
-  { name: 'Obsidian Black', hex: '#18181B', isDark: true },
-  { name: 'Heather Slate', hex: '#475569', isDark: true },
-  { name: 'Midnight Navy', hex: '#1E293B', isDark: true },
-  { name: 'Crimson Red', hex: '#B91C1C', isDark: true },
-  { name: 'Forest Pine', hex: '#15803D', isDark: true },
-  { name: 'Royal Cobalt', hex: '#1D4ED8', isDark: true },
-  { name: 'Pastel Lavender', hex: '#C084FC', isDark: false },
-  { name: 'Sunset Coral', hex: '#F97316', isDark: false },
-  { name: 'Desert Sand', hex: '#D97706', isDark: false },
-  { name: 'Olive Drab', hex: '#4D7C0F', isDark: true },
-  { name: 'Rose Quartz', hex: '#F43F5E', isDark: false },
+  // Classics
+  { name: 'Crisp White', hex: '#FFFFFF', isDark: false, category: 'classics' },
+  { name: 'Obsidian Black', hex: '#18181B', isDark: true, category: 'classics' },
+  { name: 'Heather Slate', hex: '#475569', isDark: true, category: 'classics' },
+  { name: 'Midnight Navy', hex: '#1E293B', isDark: true, category: 'classics' },
+  { name: 'Athletic Grey', hex: '#94A3B8', isDark: false, category: 'classics' },
+  { name: 'Charcoal', hex: '#27272A', isDark: true, category: 'classics' },
+  
+  // Earthy
+  { name: 'Forest Pine', hex: '#15803D', isDark: true, category: 'earthy' },
+  { name: 'Olive Drab', hex: '#4D7C0F', isDark: true, category: 'earthy' },
+  { name: 'Desert Sand', hex: '#D97706', isDark: false, category: 'earthy' },
+  { name: 'Warm Terracotta', hex: '#C2410C', isDark: true, category: 'earthy' },
+  { name: 'Raw Ochre', hex: '#B45309', isDark: true, category: 'earthy' },
+  { name: 'Espresso Clay', hex: '#78350F', isDark: true, category: 'earthy' },
+
+  // Vibrant
+  { name: 'Crimson Red', hex: '#B91C1C', isDark: true, category: 'vibrant' },
+  { name: 'Royal Cobalt', hex: '#1D4ED8', isDark: true, category: 'vibrant' },
+  { name: 'Sunset Coral', hex: '#EA580C', isDark: false, category: 'vibrant' },
+  { name: 'Electric Cyan', hex: '#06B6D4', isDark: false, category: 'vibrant' },
+  { name: 'Acid Lime', hex: '#84CC16', isDark: false, category: 'vibrant' },
+  { name: 'Vivid Violet', hex: '#7C3AED', isDark: true, category: 'vibrant' },
+
+  // Pastels
+  { name: 'Pastel Lavender', hex: '#C084FC', isDark: false, category: 'pastels' },
+  { name: 'Rose Quartz', hex: '#FDA4AF', isDark: false, category: 'pastels' },
+  { name: 'Baby Sky Blue', hex: '#BAE6FD', isDark: false, category: 'pastels' },
+  { name: 'Mint Pistachio', hex: '#A7F3D0', isDark: false, category: 'pastels' },
+  { name: 'Butter Pale', hex: '#FEF08A', isDark: false, category: 'pastels' },
+  { name: 'Soft Peach', hex: '#FFEDD5', isDark: false, category: 'pastels' },
 ];
 
 export const SAMPLE_GRAPHICS = [
