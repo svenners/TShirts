@@ -713,13 +713,29 @@
                   <span>Open Google Photos Library</span>
                 </button>
                 <p class="picker-status-text" id="pickerStatusText">Select photos from Google Photos or Google Drive</p>
+                <div id="pickerProgressWrap" class="picker-progress-wrap hidden">
+                  <div class="spinner-small"></div>
+                  <span id="pickerProgressLabel">Loading image...</span>
+                </div>
+              </div>
+
+              <!-- Current Origin Helper (for Non-localhost setup) -->
+              <div class="origin-helper-card">
+                <div class="origin-helper-text">
+                  <span class="origin-helper-title">Your Current Browser Origin:</span>
+                  <code class="origin-code" id="currentOriginCode">Detecting origin...</code>
+                </div>
+                <button type="button" class="chip-btn" id="btnCopyOrigin" title="Copy origin to paste in Google Cloud Console">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                  <span>Copy</span>
+                </button>
               </div>
 
               <!-- Optional API Credentials -->
               <details class="gphotos-creds-details" id="credsDetails">
                 <summary>API Credentials Setup (Optional)</summary>
                 <div class="creds-form">
-                  <p class="creds-desc">To connect directly with your own Google Cloud OAuth project:</p>
+                  <p class="creds-desc">To connect directly with your own Google Cloud OAuth project, add the origin above to <strong>Authorized JavaScript origins</strong> in your OAuth Client ID.</p>
                   <div class="input-field">
                     <label for="inputGoogleClientId">Google OAuth Client ID</label>
                     <input type="text" id="inputGoogleClientId" placeholder="e.g. 123456789-xyz.apps.googleusercontent.com" />
@@ -731,6 +747,15 @@
                   <button class="btn-secondary" id="btnSaveGoogleCreds">Save Credentials</button>
                 </div>
               </details>
+
+              <!-- Live Diagnostic Log Box -->
+              <div class="picker-debug-box" id="pickerDebugBox">
+                <div class="picker-debug-header">
+                  <span class="picker-debug-title">Live Diagnostic Log</span>
+                  <button type="button" class="debug-clear-btn" id="btnClearDebug">Clear</button>
+                </div>
+                <pre class="picker-debug-content" id="pickerDebugLog">Ready. Click "Open Google Photos Library" to start.</pre>
+              </div>
             </div>
 
             <!-- Tab 3: Curated Sample Photos -->
