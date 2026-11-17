@@ -222,6 +222,15 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
     });
   }
 
+  function blobToDataURL(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
   // Apply Photo to T-Shirt (converting to Data URL for 100% CORS-safe canvas export)
   async function applyPhotoUrl(imgUrl, filename = 'google_photo.jpg') {
     showLoading(true);
@@ -411,10 +420,36 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
               const itemsData = await itemsRes.json();
               if (itemsData.mediaItems && itemsData.mediaItems.length > 0) {
                 const item = itemsData.mediaItems[0];
-                const imgUrl = `${item.baseUrl}=w2400-h2400`;
-                const filename = item.filename || 'google_photo.jpg';
-                applyPhotoUrl(imgUrl, filename);
-                pickerStatusText.textContent = `Applied "${filename}"!`;
+                const rawBaseUrl = item.mediaFile?.baseUrl || item.baseUrl;
+                const filename = item.mediaFile?.filename || item.filename || 'google_photo.jpg';
+
+                if (rawBaseUrl) {
+                  pickerStatusText.textContent = `Downloading "${filename}"...`;
+                  showLoading(true);
+                  closeModal();
+
+                  try {
+                    // Fetch authenticated image bytes (requires Bearer token)
+                    const imgRes = await fetch(`${rawBaseUrl}=d`, {
+                      headers: { 'Authorization': `Bearer ${oauthToken}` }
+                    });
+
+                    if (imgRes.ok) {
+                      const blob = await imgRes.blob();
+                      const dataUrl = await blobToDataURL(blob);
+                      applyPhotoUrl(dataUrl, filename);
+                    } else {
+                      // Fallback with high-res parameter
+                      applyPhotoUrl(`${rawBaseUrl}=w2400-h2400`, filename);
+                    }
+                  } catch (fetchErr) {
+                    console.warn('Authenticated download failed, using direct URL:', fetchErr);
+                    applyPhotoUrl(`${rawBaseUrl}=w2400-h2400`, filename);
+                  }
+                } else {
+                  pickerStatusText.textContent = 'Could not find photo URL in selection.';
+                  showLoading(false);
+                }
               } else {
                 pickerStatusText.textContent = 'No photos selected.';
               }
@@ -462,13 +497,39 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
       .setOAuthToken(oauthToken)
       .setOrigin(origin)
       .setTitle('Select an Image')
-      .setCallback((data) => {
+      .setCallback(async (data) => {
         if (data[google.picker.Response.ACTION] === google.picker.Action.PICKED) {
           const doc = data[google.picker.Response.DOCUMENTS][0];
+          const fileId = doc[google.picker.Document.ID] || doc.id;
           const filename = doc[google.picker.Document.NAME] || 'google_photo.jpg';
-          const imgUrl = doc[google.picker.Document.THUMBNAILS]?.[0]?.url || doc[google.picker.Document.URL];
-          if (imgUrl) {
-            applyPhotoUrl(imgUrl, filename);
+
+          pickerStatusText.textContent = `Downloading "${filename}"...`;
+          showLoading(true);
+          closeModal();
+
+          try {
+            // Fetch direct media bytes using Drive API
+            const driveRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+              headers: { 'Authorization': `Bearer ${oauthToken}` }
+            });
+
+            if (driveRes.ok) {
+              const blob = await driveRes.blob();
+              const dataUrl = await blobToDataURL(blob);
+              applyPhotoUrl(dataUrl, filename);
+            } else {
+              // Fallback to high-res thumbnail
+              const thumb = doc[google.picker.Document.THUMBNAILS]?.[0]?.url;
+              if (thumb) {
+                applyPhotoUrl(thumb.replace(/=s\d+/, '=s2400'), filename);
+              } else {
+                throw new Error('Drive file download failed');
+              }
+            }
+          } catch (driveErr) {
+            console.error('Drive file download failed:', driveErr);
+            showLoading(false);
+            showToast('Failed to download image from Google Drive.');
           }
         }
       });
