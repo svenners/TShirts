@@ -59,8 +59,6 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
   const credsDetails = document.getElementById('credsDetails');
   const currentOriginCode = document.getElementById('currentOriginCode');
   const btnCopyOrigin = document.getElementById('btnCopyOrigin');
-  const pickerDebugLog = document.getElementById('pickerDebugLog');
-  const btnClearDebug = document.getElementById('btnClearDebug');
   const btnCheckSelection = document.getElementById('btnCheckSelection');
 
   let currentResolvedPhoto = null;
@@ -82,28 +80,11 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
     });
   }
 
-  // Live Diagnostic Logger
+  // Event Logger (console only)
   function logEvent(type, message) {
     const time = new Date().toLocaleTimeString();
     const prefix = `[${time}]`;
     console.log(`${prefix} [${type}] ${message}`);
-
-    if (pickerDebugLog) {
-      const line = document.createElement('div');
-      if (type === 'ERROR') line.className = 'log-err';
-      else if (type === 'SUCCESS') line.className = 'log-ok';
-      else line.className = 'log-info';
-
-      line.textContent = `${prefix} ${message}`;
-      pickerDebugLog.appendChild(line);
-      pickerDebugLog.scrollTop = pickerDebugLog.scrollHeight;
-    }
-  }
-
-  if (btnClearDebug && pickerDebugLog) {
-    btnClearDebug.addEventListener('click', () => {
-      pickerDebugLog.innerHTML = 'Log cleared.';
-    });
   }
 
   function setPickerProgress(active, text = '') {
