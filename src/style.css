@@ -2326,6 +2326,34 @@ input[type="range"]::-webkit-slider-thumb:hover {
   margin: 0;
 }
 
+.btn-check-selection {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #10b981;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  margin-top: 6px;
+}
+
+.btn-check-selection:hover {
+  background-color: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-check-selection.hidden {
+  display: none !important;
+}
+
 .gphotos-creds-details {
   background-color: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-subtle);

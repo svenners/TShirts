@@ -61,6 +61,7 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
   const btnCopyOrigin = document.getElementById('btnCopyOrigin');
   const pickerDebugLog = document.getElementById('pickerDebugLog');
   const btnClearDebug = document.getElementById('btnClearDebug');
+  const btnCheckSelection = document.getElementById('btnCheckSelection');
 
   let currentResolvedPhoto = null;
   let tokenClient = null;
@@ -543,6 +544,10 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
     pickerStatusText.textContent = 'Google Photos opened! Select photo and click "Done".';
     logEvent('INFO', `Opening picker popup: ${session.pickerUri}`);
 
+    if (btnCheckSelection) {
+      btnCheckSelection.classList.remove('hidden');
+    }
+
     const popup = window.open(
       session.pickerUri,
       'google_photos_picker_window',
@@ -555,117 +560,167 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
       showToast('Popup blocked — click the link in dialog to open Google Photos.');
     }
 
+    let isFetchingItems = false;
     let pollCount = 0;
-    const pollInterval = setInterval(async () => {
-      pollCount++;
+    let closedCount = 0;
+
+    async function checkSession(manual = false) {
+      if (isFetchingItems) return;
+
+      if (manual) {
+        logEvent('INFO', `Checking Google Photos session (${session.id.slice(0, 8)}...)...`);
+        setPickerProgress(true, 'Checking selection...');
+      }
 
       try {
         const getRes = await fetch(`https://photospicker.googleapis.com/v1/sessions/${session.id}`, {
           headers: { 'Authorization': `Bearer ${oauthToken}` }
         });
 
-        if (getRes.ok) {
-          const sessionData = await getRes.json();
-          if (sessionData.mediaItemsSet) {
-            clearInterval(pollInterval);
-            if (popup && !popup.closed) popup.close();
-            logEvent('SUCCESS', 'User confirmed photo selection in Google Photos!');
-            pickerStatusText.textContent = 'Retrieving selected photo...';
-            setPickerProgress(true, 'Fetching photo data...');
+        if (!getRes.ok) {
+          const errText = await getRes.text().catch(() => '');
+          logEvent('WARN', `Session check HTTP ${getRes.status}: ${errText.slice(0, 100)}`);
+          if (manual) showToast(`Google returned status ${getRes.status}`);
+          return;
+        }
 
-            const itemsRes = await fetch(`https://photospicker.googleapis.com/v1/mediaItems?sessionId=${session.id}`, {
-              headers: { 'Authorization': `Bearer ${oauthToken}` }
-            });
+        const sessionData = await getRes.json();
+        if (manual) {
+          logEvent('INFO', `Session response: mediaItemsSet = ${sessionData.mediaItemsSet}`);
+        }
 
-            if (itemsRes.ok) {
-              const itemsData = await itemsRes.json();
-              logEvent('INFO', `MediaItems received: ${itemsData.mediaItems?.length || 0} item(s)`);
+        if (sessionData.mediaItemsSet) {
+          isFetchingItems = true;
+          clearInterval(pollInterval);
+          if (btnCheckSelection) btnCheckSelection.classList.add('hidden');
+          if (popup && !popup.closed) {
+            try { popup.close(); } catch (_) {}
+          }
 
-              if (itemsData.mediaItems && itemsData.mediaItems.length > 0) {
-                const item = itemsData.mediaItems[0];
-                const rawBaseUrl = item.mediaFile?.baseUrl || item.baseUrl;
-                const filename = item.mediaFile?.filename || item.filename || 'google_photo.jpg';
+          logEvent('SUCCESS', 'User confirmed photo selection in Google Photos!');
+          pickerStatusText.textContent = 'Retrieving selected photo...';
+          setPickerProgress(true, 'Fetching photo data...');
 
-                logEvent('INFO', `Selected: "${filename}", baseUrl: ${rawBaseUrl ? rawBaseUrl.slice(0, 45) + '...' : 'none'}`);
+          const itemsRes = await fetch(`https://photospicker.googleapis.com/v1/mediaItems?sessionId=${session.id}`, {
+            headers: { 'Authorization': `Bearer ${oauthToken}` }
+          });
 
-                if (rawBaseUrl) {
-                  pickerStatusText.textContent = `Downloading "${filename}"...`;
-                  setPickerProgress(true, `Downloading "${filename}"...`);
+          if (!itemsRes.ok) {
+            const err = await itemsRes.text().catch(() => '');
+            logEvent('ERROR', `mediaItems fetch failed: HTTP ${itemsRes.status} (${err})`);
+            pickerStatusText.textContent = `Error fetching media details: HTTP ${itemsRes.status}`;
+            setPickerProgress(false);
+            return;
+          }
 
-                  // Build multi-tier candidates
-                  const candidates = [
-                    {
-                      name: 'Direct Browser Fetch (High-Res)',
-                      url: `${rawBaseUrl}=w2400-h2400`,
-                      needsAuth: true
-                    },
-                    {
-                      name: 'Vite Proxy (High-Res)',
-                      url: `/api/proxy-image?url=${encodeURIComponent(rawBaseUrl + '=w2400-h2400')}&token=${encodeURIComponent(oauthToken)}`,
-                      needsAuth: false
-                    },
-                    {
-                      name: 'Direct Browser Fetch (Original =d)',
-                      url: `${rawBaseUrl}=d`,
-                      needsAuth: true
-                    },
-                    {
-                      name: 'Vite Proxy (Original =d)',
-                      url: `/api/proxy-image?url=${encodeURIComponent(rawBaseUrl + '=d')}&token=${encodeURIComponent(oauthToken)}`,
-                      needsAuth: false
-                    },
-                    {
-                      name: 'Unauthenticated High-Res',
-                      url: `${rawBaseUrl}=w2400-h2400`,
-                      needsAuth: false
-                    }
-                  ];
+          const itemsData = await itemsRes.json();
+          logEvent('INFO', `MediaItems received: ${itemsData.mediaItems?.length || 0} item(s)`);
 
-                  try {
-                    const result = await resolveImageBytes(candidates, oauthToken);
-                    await applyPhotoToStudio(result.dataUrl, filename);
-                  } catch (downloadErr) {
-                    logEvent('ERROR', `Could not download photo: ${downloadErr.message}`);
-                    pickerStatusText.textContent = `Error downloading image: ${downloadErr.message}`;
-                    setPickerProgress(false);
-                  }
-                } else {
-                  pickerStatusText.textContent = 'Could not find photo URL in selection.';
-                  logEvent('ERROR', 'No baseUrl in mediaItem');
-                  setPickerProgress(false);
+          if (itemsData.mediaItems && itemsData.mediaItems.length > 0) {
+            const item = itemsData.mediaItems[0];
+            const rawBaseUrl = item.mediaFile?.baseUrl || item.baseUrl;
+            const filename = item.mediaFile?.filename || item.filename || 'google_photo.jpg';
+
+            logEvent('INFO', `Selected: "${filename}", baseUrl: ${rawBaseUrl ? rawBaseUrl.slice(0, 45) + '...' : 'none'}`);
+
+            if (rawBaseUrl) {
+              pickerStatusText.textContent = `Downloading "${filename}"...`;
+              setPickerProgress(true, `Downloading "${filename}"...`);
+
+              // Build multi-tier candidates
+              const candidates = [
+                {
+                  name: 'Direct Browser Fetch (High-Res)',
+                  url: `${rawBaseUrl}=w2400-h2400`,
+                  needsAuth: true
+                },
+                {
+                  name: 'Vite Proxy (High-Res)',
+                  url: `/api/proxy-image?url=${encodeURIComponent(rawBaseUrl + '=w2400-h2400')}&token=${encodeURIComponent(oauthToken)}`,
+                  needsAuth: false
+                },
+                {
+                  name: 'Direct Browser Fetch (Original =d)',
+                  url: `${rawBaseUrl}=d`,
+                  needsAuth: true
+                },
+                {
+                  name: 'Vite Proxy (Original =d)',
+                  url: `/api/proxy-image?url=${encodeURIComponent(rawBaseUrl + '=d')}&token=${encodeURIComponent(oauthToken)}`,
+                  needsAuth: false
+                },
+                {
+                  name: 'Unauthenticated High-Res',
+                  url: `${rawBaseUrl}=w2400-h2400`,
+                  needsAuth: false
                 }
-              } else {
-                pickerStatusText.textContent = 'No photos selected.';
+              ];
+
+              try {
+                const result = await resolveImageBytes(candidates, oauthToken);
+                await applyPhotoToStudio(result.dataUrl, filename);
+              } catch (downloadErr) {
+                logEvent('ERROR', `Could not download photo: ${downloadErr.message}`);
+                pickerStatusText.textContent = `Error downloading image: ${downloadErr.message}`;
                 setPickerProgress(false);
               }
             } else {
-              pickerStatusText.textContent = 'Could not load selected photo details.';
-              logEvent('ERROR', `mediaItems fetch failed: HTTP ${itemsRes.status}`);
+              pickerStatusText.textContent = 'Could not find photo URL in selection.';
+              logEvent('ERROR', 'No baseUrl in mediaItem');
               setPickerProgress(false);
             }
-
-            // Cleanup session
-            fetch(`https://photospicker.googleapis.com/v1/sessions/${session.id}`, {
-              method: 'DELETE',
-              headers: { 'Authorization': `Bearer ${oauthToken}` }
-            }).catch(() => {});
-
-            return;
+          } else {
+            pickerStatusText.textContent = 'No photos selected in Google Photos.';
+            logEvent('WARN', 'Session completed but mediaItems array was empty.');
+            setPickerProgress(false);
           }
-        }
 
-        if (popup && popup.closed) {
-          clearInterval(pollInterval);
-          pickerStatusText.textContent = 'Google Photos window closed.';
+          // Cleanup session
+          fetch(`https://photospicker.googleapis.com/v1/sessions/${session.id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${oauthToken}` }
+          }).catch(() => {});
+
+        } else if (manual) {
+          showToast('No photo selected yet in Google Photos window. Select photo and click "Done".');
           setPickerProgress(false);
         }
       } catch (pollErr) {
-        console.warn('Polling error:', pollErr);
+        logEvent('WARN', `Polling error: ${pollErr.message}`);
+      }
+    }
+
+    if (btnCheckSelection) {
+      btnCheckSelection.onclick = () => checkSession(true);
+    }
+
+    const pollInterval = setInterval(async () => {
+      pollCount++;
+
+      // Log status heartbeat every 4 polls (approx 6 seconds)
+      if (pollCount % 4 === 1) {
+        logEvent('INFO', `Waiting for photo selection in Google Photos (poll #${pollCount})...`);
       }
 
-      if (pollCount > 240) { // 4-minute timeout
+      await checkSession(false);
+
+      if (popup && popup.closed) {
+        closedCount++;
+        if (closedCount === 1) {
+          logEvent('INFO', 'Google Photos window was closed. Waiting for selection sync...');
+          pickerStatusText.textContent = 'Google Photos closed — finalizing photo selection...';
+        }
+        if (closedCount > 25) { // 35s grace period after close
+          clearInterval(pollInterval);
+          if (!isFetchingItems) {
+            pickerStatusText.textContent = 'Google Photos closed. Click "Apply to T-Shirt" if you selected a photo.';
+            logEvent('INFO', 'Poll finished after window close.');
+          }
+        }
+      }
+
+      if (pollCount > 180) { // 4.5 minutes timeout
         clearInterval(pollInterval);
-        pickerStatusText.textContent = 'Selection timed out.';
         setPickerProgress(false);
       }
     }, 1500);
