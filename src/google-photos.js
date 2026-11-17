@@ -314,14 +314,14 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
       if (!tokenClient) {
         tokenClient = google.accounts.oauth2.initTokenClient({
           client_id: clientId,
-          scope: 'https://www.googleapis.com/auth/photoslibrary.readonly https://www.googleapis.com/auth/drive.readonly',
+          scope: 'https://www.googleapis.com/auth/drive.readonly',
           callback: (response) => {
             if (response.error !== undefined) {
               pickerStatusText.textContent = `Authorization error: ${response.error}`;
               showToast('Google Sign-in failed.');
               return;
             }
-            createPicker(response.access_token, apiKey);
+            createPicker(response.access_token, apiKey, clientId);
           }
         });
       }
@@ -329,19 +329,22 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
     });
   }
 
-  function createPicker(oauthToken, apiKey) {
-    pickerStatusText.textContent = 'Opening Google Photos Picker...';
+  function createPicker(oauthToken, apiKey, clientId) {
+    pickerStatusText.textContent = 'Opening Google Picker...';
 
-    // Photos View & Docs Images View
-    const photosView = new google.picker.PhotosView();
+    // Image picker view
     const driveView = new google.picker.DocsView(google.picker.ViewId.DOCS_IMAGES);
+    driveView.setIncludeFolders(true);
 
-    const picker = new google.picker.PickerBuilder()
-      .addView(photosView)
+    const origin = window.location.protocol + '//' + window.location.host;
+    const appId = clientId ? clientId.split('-')[0] : '';
+
+    const builder = new google.picker.PickerBuilder()
       .addView(driveView)
       .setOAuthToken(oauthToken)
       .setDeveloperKey(apiKey)
-      .setTitle('Select an Image from Google Photos')
+      .setOrigin(origin)
+      .setTitle('Select an Image')
       .setCallback((data) => {
         if (data[google.picker.Response.ACTION] === google.picker.Action.PICKED) {
           const doc = data[google.picker.Response.DOCUMENTS][0];
@@ -351,10 +354,14 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
             applyPhotoUrl(imgUrl, filename);
           }
         }
-      })
-      .build();
+      });
 
+    if (appId) {
+      builder.setAppId(appId);
+    }
+
+    const picker = builder.build();
     picker.setVisible(true);
-    pickerStatusText.textContent = 'Picker open. Select a photo to apply.';
+    pickerStatusText.textContent = 'Picker open. Select an image to apply.';
   }
 }
