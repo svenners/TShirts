@@ -1357,6 +1357,8 @@ function attachEventListeners() {
       // Calibrated base canvas dimensions strictly preserving natural image aspect ratio
       const { baseCanvasW, baseCanvasH } = calculateGraphicBaseCanvasSize(state.graphic.dimensions);
       const canvasGraphicW = baseCanvasW * state.transform.scale;
+      const canvasGraphicH = baseCanvasH * state.transform.scale;
+
       // Format photo filename as suffix if graphic is loaded
       let photoSuffix = '';
       if (state.graphic && state.graphic.filename) {
