@@ -286,17 +286,36 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
   }
 
   // Official Google Picker API
+  let activeClientId = null;
+
   if (btnLaunchPicker) {
     btnLaunchPicker.addEventListener('click', () => {
-      const apiKey = localStorage.getItem('gphotos_api_key') || (inputApiKey ? inputApiKey.value.trim() : '');
-      const clientId = localStorage.getItem('gphotos_client_id') || (inputClientId ? inputClientId.value.trim() : '');
+      const rawApiKey = (inputApiKey ? inputApiKey.value.trim() : '') || localStorage.getItem('gphotos_api_key') || '';
+      const rawClientId = (inputClientId ? inputClientId.value.trim() : '') || localStorage.getItem('gphotos_client_id') || '';
+
+      const apiKey = rawApiKey.replace(/["';\s]/g, '');
+      const clientId = rawClientId.replace(/["';\s]/g, '');
 
       if (!apiKey || !clientId) {
         if (credsDetails) credsDetails.open = true;
-        pickerStatusText.textContent = 'Please enter your Google OAuth Client ID & API Key above to launch the Cloud Picker.';
-        showToast('Google API Key & Client ID required for native Picker dialog.');
+        pickerStatusText.textContent = 'Please enter both your Google OAuth Client ID & API Key above.';
+        showToast('Google API Key & Client ID required.');
         return;
       }
+
+      // Check for swapped credentials
+      if (apiKey.includes('googleusercontent.com')) {
+        if (credsDetails) credsDetails.open = true;
+        pickerStatusText.textContent = 'Warning: Your API Key field contains a Client ID (.apps.googleusercontent.com). The API Key starts with "AIzaSy...".';
+        showToast('Please check the API Key field.');
+        return;
+      }
+
+      // Save sanitized values automatically
+      localStorage.setItem('gphotos_api_key', apiKey);
+      localStorage.setItem('gphotos_client_id', clientId);
+      if (inputApiKey) inputApiKey.value = apiKey;
+      if (inputClientId) inputClientId.value = clientId;
 
       launchGooglePicker(apiKey, clientId);
     });
@@ -311,7 +330,8 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
     pickerStatusText.textContent = 'Requesting Google authorization...';
 
     gapi.load('picker', () => {
-      if (!tokenClient) {
+      if (!tokenClient || activeClientId !== clientId) {
+        activeClientId = clientId;
         tokenClient = google.accounts.oauth2.initTokenClient({
           client_id: clientId,
           scope: 'https://www.googleapis.com/auth/drive.readonly',
