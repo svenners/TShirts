@@ -2,6 +2,7 @@
 
 import { MODELS_CONFIG, COLOR_SWATCHES, SAMPLE_GRAPHICS, ETHNICITY_OPTIONS, SKIN_TONE_PRESETS } from './model-config.js';
 import { getLuminance, downloadMockupPNG, downloadTechPackJSON } from './canvas-exporter.js';
+import { setupGooglePhotos } from './google-photos.js';
 
 // --- State ---
 const state = {
@@ -286,6 +287,11 @@ function init() {
   setupPrintZoneResizing();
   setupCollapsiblePanels();
   setupAdvancedModal();
+  setupGooglePhotos({
+    setGraphic,
+    showToast,
+    showLoading
+  });
   
   // Set default model figure (clean state: no sample artwork pre-loaded)
   updateModelAndStyle();
