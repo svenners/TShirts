@@ -81,6 +81,46 @@ export default defineConfig({
             res.end(JSON.stringify({ success: false, error: err.message }));
           }
         });
+
+        // Authenticated Image Proxy for Google Photos & Google Drive
+        server.middlewares.use('/api/proxy-image', async (req, res) => {
+          try {
+            const urlObj = new URL(req.url, 'http://localhost');
+            const targetUrl = urlObj.searchParams.get('url');
+            const token = urlObj.searchParams.get('token');
+
+            if (!targetUrl) {
+              res.statusCode = 400;
+              res.end('Missing url parameter');
+              return;
+            }
+
+            const headers = {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            };
+            if (token) {
+              headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const response = await fetch(targetUrl, { headers });
+            if (!response.ok) {
+              res.statusCode = response.status;
+              res.end(`Upstream error: ${response.statusText}`);
+              return;
+            }
+
+            const contentType = response.headers.get('content-type') || 'image/jpeg';
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+
+            const arrayBuffer = await response.arrayBuffer();
+            res.end(Buffer.from(arrayBuffer));
+          } catch (err) {
+            res.statusCode = 500;
+            res.end(err.message);
+          }
+        });
       }
     }
   ]

@@ -396,6 +396,11 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
       'width=1000,height=720,left=150,top=100,resizable=yes,scrollbars=yes'
     );
 
+    if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+      pickerStatusText.innerHTML = `Popup blocked by your browser. <a href="${session.pickerUri}" target="_blank" style="color: #6366f1; text-decoration: underline; font-weight: bold;">Click here to open Google Photos</a>`;
+      showToast('Popup blocked — click the link above to open Google Photos.');
+    }
+
     let pollCount = 0;
     const pollInterval = setInterval(async () => {
       pollCount++;
@@ -424,31 +429,12 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
                 const filename = item.mediaFile?.filename || item.filename || 'google_photo.jpg';
 
                 if (rawBaseUrl) {
-                  pickerStatusText.textContent = `Downloading "${filename}"...`;
-                  showLoading(true);
-                  closeModal();
-
-                  try {
-                    // Fetch authenticated image bytes (requires Bearer token)
-                    const imgRes = await fetch(`${rawBaseUrl}=d`, {
-                      headers: { 'Authorization': `Bearer ${oauthToken}` }
-                    });
-
-                    if (imgRes.ok) {
-                      const blob = await imgRes.blob();
-                      const dataUrl = await blobToDataURL(blob);
-                      applyPhotoUrl(dataUrl, filename);
-                    } else {
-                      // Fallback with high-res parameter
-                      applyPhotoUrl(`${rawBaseUrl}=w2400-h2400`, filename);
-                    }
-                  } catch (fetchErr) {
-                    console.warn('Authenticated download failed, using direct URL:', fetchErr);
-                    applyPhotoUrl(`${rawBaseUrl}=w2400-h2400`, filename);
-                  }
+                  pickerStatusText.textContent = `Applying "${filename}"...`;
+                  const targetFetchUrl = `${rawBaseUrl}=w2400-h2400`;
+                  const localProxyUrl = `/api/proxy-image?url=${encodeURIComponent(targetFetchUrl)}&token=${encodeURIComponent(oauthToken)}`;
+                  applyPhotoUrl(localProxyUrl, filename);
                 } else {
                   pickerStatusText.textContent = 'Could not find photo URL in selection.';
-                  showLoading(false);
                 }
               } else {
                 pickerStatusText.textContent = 'No photos selected.';
@@ -497,40 +483,16 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
       .setOAuthToken(oauthToken)
       .setOrigin(origin)
       .setTitle('Select an Image')
-      .setCallback(async (data) => {
+      .setCallback((data) => {
         if (data[google.picker.Response.ACTION] === google.picker.Action.PICKED) {
           const doc = data[google.picker.Response.DOCUMENTS][0];
           const fileId = doc[google.picker.Document.ID] || doc.id;
           const filename = doc[google.picker.Document.NAME] || 'google_photo.jpg';
 
-          pickerStatusText.textContent = `Downloading "${filename}"...`;
-          showLoading(true);
-          closeModal();
-
-          try {
-            // Fetch direct media bytes using Drive API
-            const driveRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-              headers: { 'Authorization': `Bearer ${oauthToken}` }
-            });
-
-            if (driveRes.ok) {
-              const blob = await driveRes.blob();
-              const dataUrl = await blobToDataURL(blob);
-              applyPhotoUrl(dataUrl, filename);
-            } else {
-              // Fallback to high-res thumbnail
-              const thumb = doc[google.picker.Document.THUMBNAILS]?.[0]?.url;
-              if (thumb) {
-                applyPhotoUrl(thumb.replace(/=s\d+/, '=s2400'), filename);
-              } else {
-                throw new Error('Drive file download failed');
-              }
-            }
-          } catch (driveErr) {
-            console.error('Drive file download failed:', driveErr);
-            showLoading(false);
-            showToast('Failed to download image from Google Drive.');
-          }
+          pickerStatusText.textContent = `Applying "${filename}"...`;
+          const driveUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
+          const localProxyUrl = `/api/proxy-image?url=${encodeURIComponent(driveUrl)}&token=${encodeURIComponent(oauthToken)}`;
+          applyPhotoUrl(localProxyUrl, filename);
         }
       });
 
