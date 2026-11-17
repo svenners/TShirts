@@ -334,14 +334,43 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
         activeClientId = clientId;
         tokenClient = google.accounts.oauth2.initTokenClient({
           client_id: clientId,
-          scope: 'https://www.googleapis.com/auth/drive.readonly',
-          callback: (response) => {
+          scope: 'https://www.googleapis.com/auth/photospicker.mediaitems.readonly https://www.googleapis.com/auth/drive.readonly',
+          callback: async (response) => {
             if (response.error !== undefined) {
               pickerStatusText.textContent = `Authorization error: ${response.error}`;
               showToast('Google Sign-in failed.');
               return;
             }
-            createPicker(response.access_token, apiKey, clientId);
+
+            const token = response.access_token;
+
+            // 1. Try Google Photos Picker API (dedicated to Google Photos)
+            pickerStatusText.textContent = 'Opening Google Photos library...';
+            try {
+              const sessionRes = await fetch('https://photospicker.googleapis.com/v1/sessions', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+              });
+
+              if (sessionRes.ok) {
+                const session = await sessionRes.json();
+                if (session && session.pickerUri) {
+                  openGooglePhotosPickerSession(session, token);
+                  return;
+                }
+              } else {
+                console.warn('Google Photos session API response:', sessionRes.status, await sessionRes.text());
+              }
+            } catch (err) {
+              console.warn('Google Photos Picker API session error, falling back to Drive:', err);
+            }
+
+            // 2. Fallback to Google Drive picker
+            createDrivePicker(token, apiKey, clientId);
           }
         });
       }
@@ -349,8 +378,77 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
     });
   }
 
-  function createPicker(oauthToken, apiKey, clientId) {
-    pickerStatusText.textContent = 'Opening Google Picker...';
+  function openGooglePhotosPickerSession(session, oauthToken) {
+    pickerStatusText.textContent = 'Google Photos opened! Select your photo(s) and click "Done".';
+
+    const popup = window.open(
+      session.pickerUri,
+      'google_photos_picker_window',
+      'width=1000,height=720,left=150,top=100,resizable=yes,scrollbars=yes'
+    );
+
+    let pollCount = 0;
+    const pollInterval = setInterval(async () => {
+      pollCount++;
+
+      try {
+        const getRes = await fetch(`https://photospicker.googleapis.com/v1/sessions/${session.id}`, {
+          headers: { 'Authorization': `Bearer ${oauthToken}` }
+        });
+
+        if (getRes.ok) {
+          const sessionData = await getRes.json();
+          if (sessionData.mediaItemsSet) {
+            clearInterval(pollInterval);
+            if (popup && !popup.closed) popup.close();
+            pickerStatusText.textContent = 'Retrieving selected photo...';
+
+            const itemsRes = await fetch(`https://photospicker.googleapis.com/v1/mediaItems?sessionId=${session.id}`, {
+              headers: { 'Authorization': `Bearer ${oauthToken}` }
+            });
+
+            if (itemsRes.ok) {
+              const itemsData = await itemsRes.json();
+              if (itemsData.mediaItems && itemsData.mediaItems.length > 0) {
+                const item = itemsData.mediaItems[0];
+                const imgUrl = `${item.baseUrl}=w2400-h2400`;
+                const filename = item.filename || 'google_photo.jpg';
+                applyPhotoUrl(imgUrl, filename);
+                pickerStatusText.textContent = `Applied "${filename}"!`;
+              } else {
+                pickerStatusText.textContent = 'No photos selected.';
+              }
+            } else {
+              pickerStatusText.textContent = 'Could not load selected photo details.';
+            }
+
+            // Clean up session proactively
+            fetch(`https://photospicker.googleapis.com/v1/sessions/${session.id}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${oauthToken}` }
+            }).catch(() => {});
+
+            return;
+          }
+        }
+
+        if (popup && popup.closed) {
+          clearInterval(pollInterval);
+          pickerStatusText.textContent = 'Google Photos window closed.';
+        }
+      } catch (pollErr) {
+        console.warn('Google Photos polling error:', pollErr);
+      }
+
+      if (pollCount > 180) { // 3-minute timeout
+        clearInterval(pollInterval);
+        pickerStatusText.textContent = 'Selection timed out.';
+      }
+    }, 1500);
+  }
+
+  function createDrivePicker(oauthToken, apiKey, clientId) {
+    pickerStatusText.textContent = 'Opening image selector...';
 
     // Image picker view
     const driveView = new google.picker.DocsView(google.picker.ViewId.DOCS_IMAGES);
