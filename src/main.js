@@ -1357,9 +1357,17 @@ function attachEventListeners() {
       // Calibrated base canvas dimensions strictly preserving natural image aspect ratio
       const { baseCanvasW, baseCanvasH } = calculateGraphicBaseCanvasSize(state.graphic.dimensions);
       const canvasGraphicW = baseCanvasW * state.transform.scale;
-      const canvasGraphicH = baseCanvasH * state.transform.scale;
+      // Format photo filename as suffix if graphic is loaded
+      let photoSuffix = '';
+      if (state.graphic && state.graphic.filename) {
+        const rawName = state.graphic.filename.replace(/\.[^/.]+$/, '').trim();
+        const cleanName = rawName.replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+        if (cleanName) {
+          photoSuffix = `-${cleanName}`;
+        }
+      }
 
-      const filename = `tshirt-${state.gender}-${state.ethnicity}-${state.style}-${state.shirtColor.replace('#', '')}.png`;
+      const filename = `tshirt-${state.gender}-${state.ethnicity}-${state.style}-${state.shirtColor.replace('#', '')}${photoSuffix}.png`;
 
       await downloadMockupPNG({
         modelConfig,
@@ -1384,7 +1392,7 @@ function attachEventListeners() {
         }
       }, filename);
 
-      showToast('Photorealistic Mockup downloaded (896 × 1200 px)!');
+      showToast(`Mockup downloaded: ${filename}`);
     } catch (err) {
       console.error(err);
       showToast('Export failed. Check console.');
@@ -1434,7 +1442,17 @@ function attachEventListeners() {
         }
       }
     };
-    downloadTechPackJSON(spec, `tshirt-techpack-${state.gender}-${state.ethnicity}-${state.style}.json`);
+
+    let photoSuffix = '';
+    if (state.graphic && state.graphic.filename) {
+      const rawName = state.graphic.filename.replace(/\.[^/.]+$/, '').trim();
+      const cleanName = rawName.replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+      if (cleanName) {
+        photoSuffix = `-${cleanName}`;
+      }
+    }
+
+    downloadTechPackJSON(spec, `tshirt-techpack-${state.gender}-${state.ethnicity}-${state.style}${photoSuffix}.json`);
     showToast('Tech Pack JSON exported!');
   };
 
