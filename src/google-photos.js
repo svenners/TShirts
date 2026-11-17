@@ -296,15 +296,15 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
       const apiKey = rawApiKey.replace(/["';\s]/g, '');
       const clientId = rawClientId.replace(/["';\s]/g, '');
 
-      if (!apiKey || !clientId) {
+      if (!clientId) {
         if (credsDetails) credsDetails.open = true;
-        pickerStatusText.textContent = 'Please enter both your Google OAuth Client ID & API Key above.';
-        showToast('Google API Key & Client ID required.');
+        pickerStatusText.textContent = 'Please enter your Google OAuth Client ID above.';
+        showToast('Google OAuth Client ID required.');
         return;
       }
 
       // Check for swapped credentials
-      if (apiKey.includes('googleusercontent.com')) {
+      if (apiKey && apiKey.includes('googleusercontent.com')) {
         if (credsDetails) credsDetails.open = true;
         pickerStatusText.textContent = 'Warning: Your API Key field contains a Client ID (.apps.googleusercontent.com). The API Key starts with "AIzaSy...".';
         showToast('Please check the API Key field.');
@@ -362,7 +362,6 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
     const builder = new google.picker.PickerBuilder()
       .addView(driveView)
       .setOAuthToken(oauthToken)
-      .setDeveloperKey(apiKey)
       .setOrigin(origin)
       .setTitle('Select an Image')
       .setCallback((data) => {
@@ -375,6 +374,11 @@ export function setupGooglePhotos({ setGraphic, showToast, showLoading }) {
           }
         }
       });
+
+    // Only attach developer key if provided (OAuth token is already authorized)
+    if (apiKey) {
+      builder.setDeveloperKey(apiKey);
+    }
 
     if (appId) {
       builder.setAppId(appId);
